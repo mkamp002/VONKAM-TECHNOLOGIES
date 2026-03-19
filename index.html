@@ -1410,7 +1410,7 @@ footer{border-top:1px solid var(--w06);padding:44px 0;background:var(--ink2)}
                 <div style="background:var(--w06);border:1px solid var(--w10);border-radius:8px;overflow:hidden">
                   <div style="padding:10px 14px;border-bottom:1px solid var(--w06);background:rgba(0,0,0,.2)">
                     <div style="font-size:12.5px;font-weight:600;margin-bottom:2px">Re: Your property on SW 98 AVE</div>
-                    <div style="font-family:var(--mono);font-size:9.5px;color:var(--w30)">From: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="fd8f929f988f89d390bd98909c9491d39e9290">[email&#160;protected]</a> · Today, 8:22 AM</div>
+                    <div style="font-family:var(--mono);font-size:9.5px;color:var(--w30)">From: robert.m@example.com · Today, 8:22 AM</div>
                   </div>
                   <div style="padding:14px;font-size:12.5px;color:var(--w70);line-height:1.7">
                     Hi Alex,<br><br>
@@ -1424,7 +1424,7 @@ footer{border-top:1px solid var(--w06);padding:44px 0;background:var(--ink2)}
                 <div style="background:var(--w06);border:1px solid var(--w10);border-radius:8px;overflow:hidden">
                   <div style="padding:10px 14px;border-bottom:1px solid var(--w06);background:rgba(0,0,0,.2)">
                     <div style="font-size:12.5px;font-weight:600;margin-bottom:2px">Thank you for reaching out</div>
-                    <div style="font-family:var(--mono);font-size:9.5px;color:var(--w30)">From: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="771312191e04125900161b1c120537121a161e1b5914181a">[email&#160;protected]</a> · Yesterday, 10:44 AM</div>
+                    <div style="font-family:var(--mono);font-size:9.5px;color:var(--w30)">From: denise.w@example.com · Yesterday, 10:44 AM</div>
                   </div>
                   <div style="padding:14px;font-size:12.5px;color:var(--w70);line-height:1.7">
                     Hello,<br><br>
@@ -1438,7 +1438,7 @@ footer{border-top:1px solid var(--w06);padding:44px 0;background:var(--ink2)}
                 <div style="background:var(--w06);border:1px solid var(--w10);border-radius:8px;overflow:hidden">
                   <div style="padding:10px 14px;border-bottom:1px solid var(--w06);background:rgba(0,0,0,.2)">
                     <div style="font-size:12.5px;font-weight:600;margin-bottom:2px">Question about the process</div>
-                    <div style="font-family:var(--mono);font-size:9.5px;color:var(--w30)">From: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="adceccdfc1c2de83dfd8c4d7edc8c0ccc4c183cec2c0">[email&#160;protected]</a> · 2 days ago, 7:50 PM</div>
+                    <div style="font-family:var(--mono);font-size:9.5px;color:var(--w30)">From: carlos.r@example.com · 2 days ago, 7:50 PM</div>
                   </div>
                   <div style="padding:14px;font-size:12.5px;color:var(--w70);line-height:1.7">
                     Hi,<br><br>
@@ -1788,7 +1788,7 @@ footer{border-top:1px solid var(--w06);padding:44px 0;background:var(--ink2)}
       <h4>Company</h4>
       <a href="#pricing">Pricing</a>
       <a href="#cta">Early Access</a>
-      <a href="/cdn-cgi/l/email-protection#1078757c7c7f50667f7e7b717d3e7f7e7c797e75">Contact</a>
+      <a href="mailto:hello@vonkam.online">Contact</a>
       <a href="https://vonkam.technology" target="_blank">vonkam.technology</a>
     </div>
     <div class="footer-links-col">
@@ -1811,7 +1811,7 @@ footer{border-top:1px solid var(--w06);padding:44px 0;background:var(--ink2)}
 <!-- ══════════════════════════════════════════════
      SCRIPTS
 ══════════════════════════════════════════════ -->
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 /* ════════════════════════════════════════════
    SUPABASE CONFIG
 ════════════════════════════════════════════ */
@@ -2357,4 +2357,16 @@ if (eynCard) eynObs.observe(eynCard)
 
 /* shake keyframe injection */
 const styleEl = document.createElement('style')
-styleEl.textContent = `@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transfo
+styleEl.textContent = `@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}`
+document.head.appendChild(styleEl)
+
+/* Initialize workspace panel transitions */
+document.querySelectorAll('[id^="ws-content-"]').forEach(el => {
+  el.style.transition = 'opacity .3s, transform .3s'
+  if (el.id !== 'ws-content-texts-text1') { el.style.display = 'none' }
+  else { el.style.opacity = '1'; el.style.transform = 'none' }
+})
+
+</script>
+</body>
+</html>
