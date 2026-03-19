@@ -1,0 +1,2360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>VonkamData — Pre-Foreclosure Intelligence for South Florida Investors</title>
+<meta name="description" content="Live pre-foreclosure case data, unified homeowner outreach, and deal pipeline management — built exclusively for South Florida real estate investors."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<style>
+/* ════════════════════════════════════════════════════
+   TOKENS
+════════════════════════════════════════════════════ */
+:root{
+  --ink:       #080808;
+  --ink2:      #0d0d0d;
+  --ink3:      #141414;
+  --ink4:      #1a1a1a;
+  --ink5:      #222222;
+  --w06:       rgba(255,255,255,.06);
+  --w10:       rgba(255,255,255,.10);
+  --w15:       rgba(255,255,255,.15);
+  --w30:       rgba(255,255,255,.30);
+  --w50:       rgba(255,255,255,.50);
+  --w70:       rgba(255,255,255,.70);
+  --gold:      #ffffff;
+  --gold2:     #e8e8e8;
+  --gold3:     #d0d0d0;
+  --gold-glow: rgba(255,255,255,.10);
+  --teal:      #ffffff;
+  --grn:       #22c55e;
+  --ora:       #f97316;
+  --red:       #ef4444;
+  --ff:        'Sora', sans-serif;
+  --mono:      'JetBrains Mono', monospace;
+  --ease-out:  cubic-bezier(.22,1,.36,1);
+  --ease-in-out: cubic-bezier(.65,0,.35,1);
+  --max:       1200px;
+  --nav-h:     66px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{background:var(--ink);color:#fff;font-family:var(--ff);overflow-x:hidden;line-height:1.6;cursor:none}
+::selection{background:#fff;color:#000}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--ink)}
+::-webkit-scrollbar-thumb{background:var(--w15);border-radius:3px}
+img{display:block;max-width:100%}
+a{text-decoration:none;color:inherit}
+a:link,a:visited{color:inherit}
+
+/* ════════════════════════════════════════════════════
+   CUSTOM CURSOR
+════════════════════════════════════════════════════ */
+#cursor{
+  position:fixed;width:10px;height:10px;border-radius:50%;
+  background:#fff;pointer-events:none;z-index:9999;
+  transform:translate(-50%,-50%);
+  transition:transform .1s,width .3s var(--ease-out),height .3s var(--ease-out),opacity .3s;
+  opacity:.9;
+}
+#cursor-ring{
+  position:fixed;width:38px;height:38px;border-radius:50%;
+  border:1.5px solid rgba(255,255,255,.45);pointer-events:none;z-index:9998;
+  transform:translate(-50%,-50%);
+  transition:transform .18s var(--ease-out),width .35s var(--ease-out),height .35s var(--ease-out),opacity .3s,border-color .3s;
+}
+/* cursor switches to dark on white surfaces */
+body:has(.hero-btn-primary:hover) #cursor,
+body:has(.btn-cta:hover) #cursor,
+body:has(.f-sub:hover) #cursor,
+body:has(.beta-cta:hover) #cursor,
+body:has(.plan-btn.primary:hover) #cursor { background:#111; opacity:1; }
+
+/* ════════════════════════════════════════════════════
+   NOISE + GRAIN
+════════════════════════════════════════════════════ */
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:8000;
+  opacity:.028;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px 200px;
+}
+
+/* ════════════════════════════════════════════════════
+   UTILS
+════════════════════════════════════════════════════ */
+.wrap{max-width:var(--max);margin:0 auto;padding:0 36px}
+.badge{
+  display:inline-flex;align-items:center;gap:7px;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  padding:5px 14px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:rgba(255,255,255,.8);
+}
+.badge-dot{width:5px;height:5px;border-radius:50%;background:#fff;animation:pulse 2s ease-in-out infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.7)}}
+
+/* ════════════════════════════════════════════════════
+   NAV
+════════════════════════════════════════════════════ */
+#nav{
+  position:fixed;top:0;left:0;right:0;z-index:700;
+  height:var(--nav-h);
+  display:flex;align-items:center;padding:0 36px;gap:0;
+  background:rgba(7,9,13,.0);
+  border-bottom:1px solid transparent;
+  transition:background .5s,border-color .5s,backdrop-filter .5s;
+}
+#nav.scrolled{
+  background:rgba(7,9,13,.88);
+  border-color:var(--w06);
+  backdrop-filter:blur(24px);
+}
+.nav-logo{display:flex;align-items:center;gap:11px;flex-shrink:0;margin-right:44px}
+.nav-logo-mark{
+  width:34px;height:34px;border-radius:8px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;
+  transition:box-shadow .3s;
+}
+.nav-logo:hover .nav-logo-mark{box-shadow:0 0 20px rgba(255,255,255,.15)}
+.nav-logo-text{font-size:15.5px;font-weight:700;letter-spacing:-.01em;color:#fff}
+.nav-logo-text b{color:rgba(255,255,255,.55);font-weight:700}
+.nav-links{display:flex;align-items:center;gap:4px;flex:1}
+.nl{
+  padding:7px 16px;font-size:13.5px;font-weight:400;
+  color:var(--w70);border-radius:7px;
+  transition:color .18s,background .18s;display:flex;align-items:center;gap:4px;
+  white-space:nowrap;
+}
+.nl:hover{color:#fff;background:var(--w06)}
+.nl-chevron{opacity:.45;transition:transform .2s,opacity .2s}
+.nl:hover .nl-chevron{transform:rotate(180deg);opacity:.8}
+.nav-r{
+  display:flex;align-items:center;gap:8px;margin-left:auto;
+  padding-left:20px;
+  border-left:1px solid var(--w10);
+}
+.btn-outline{
+  padding:9px 20px;font-size:13.5px;font-weight:500;color:#fff;
+  border:1px solid var(--w15);border-radius:8px;
+  transition:border-color .18s,background .18s;
+  white-space:nowrap;
+}
+.btn-outline:hover{border-color:var(--w30);background:var(--w06)}
+.btn-cta{
+  padding:9px 22px;font-size:13.5px;font-weight:600;
+  color:#000 !important;background:#fff;border-radius:8px;
+  display:flex;align-items:center;gap:7px;
+  isolation:isolate;
+  transition:background .2s,transform .2s,box-shadow .2s;
+  box-shadow:0 0 0 rgba(255,255,255,0);
+}
+.btn-cta:hover{background:#e8e8e8;transform:translateY(-1px);box-shadow:0 8px 28px rgba(255,255,255,.15)}
+.btn-cta svg{transition:transform .2s}
+.btn-cta:hover svg{transform:translateX(3px)}
+.nav-hamburger{
+  display:none;width:38px;height:38px;border-radius:8px;
+  border:1px solid var(--w10);background:var(--w06);
+  align-items:center;justify-content:center;cursor:pointer;margin-left:auto;
+  transition:background .18s,border-color .18s;
+}
+.nav-hamburger:hover{background:var(--w10);border-color:var(--w15)}
+
+/* mob menu */
+.mob-menu{
+  display:none;position:fixed;inset:0;z-index:650;
+  background:rgba(7,9,13,.97);backdrop-filter:blur(20px);
+  flex-direction:column;padding:calc(var(--nav-h) + 28px) 28px 28px;gap:4px;
+  transform:translateX(100%);transition:transform .4s var(--ease-out);
+}
+.mob-menu.open{transform:none}
+.mob-link{
+  padding:14px 16px;font-size:17px;font-weight:500;
+  color:var(--w70);border-radius:8px;transition:background .15s,color .15s;
+}
+.mob-link:hover{background:var(--w06);color:#fff}
+.mob-sep{height:1px;background:var(--w06);margin:12px 0}
+
+/* ════════════════════════════════════════════════════
+   HERO
+════════════════════════════════════════════════════ */
+.hero{
+  position:relative;min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;overflow:hidden;
+  padding:calc(var(--nav-h) + 100px) 36px 100px;
+}
+/* deep background layers */
+.hero-bg-layer{position:absolute;inset:0;pointer-events:none}
+.hero-bg-radial{
+  position:absolute;top:-10%;left:50%;transform:translateX(-50%);
+  width:120%;height:90%;
+  background:radial-gradient(ellipse at 50% 20%, rgba(255,255,255,0.04) 0%, rgba(8,8,8,0) 65%);
+}
+.hero-bg-gold{
+  position:absolute;top:35%;left:50%;transform:translateX(-50%);
+  width:800px;height:600px;
+  background:radial-gradient(ellipse,rgba(255,255,255,.025) 0%,transparent 65%);
+}
+.hero-grid-lines{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.022) 1px, transparent 1px);
+  background-size:72px 72px;
+  mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,black 30%,transparent 80%);
+}
+.hero-vignette{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 50% at 50% 100%, rgba(7,9,13,1) 0%, transparent 70%);
+}
+
+.hero-inner{position:relative;z-index:2;max-width:860px}
+.hero-badge{margin-bottom:32px;animation:fadeUp .7s var(--ease-out) both}
+.hero-h1{
+  font-size:clamp(46px,7vw,90px);font-weight:800;
+  letter-spacing:-.04em;line-height:.98;
+  margin-bottom:28px;
+  animation:fadeUp .8s var(--ease-out) .1s both;
+}
+.hero-h1 .dim{
+  color:var(--w50);display:block;font-weight:300;font-size:.62em;
+  letter-spacing:-.02em;margin-top:6px;
+}
+.hero-sub{
+  font-size:18px;font-weight:300;color:var(--w50);
+  max-width:580px;margin:0 auto 52px;line-height:1.75;
+  animation:fadeUp .8s var(--ease-out) .2s both;
+}
+.hero-actions{
+  display:flex;justify-content:center;align-items:center;gap:14px;
+  margin-bottom:20px;
+  animation:fadeUp .8s var(--ease-out) .3s both;
+}
+.hero-btn-primary{
+  padding:16px 36px;font-size:15.5px;font-weight:700;
+  color:#000 !important;background:#fff;border:none;
+  border-radius:10px;cursor:pointer;
+  isolation:isolate;
+  transition:background .2s,transform .25s var(--ease-out),box-shadow .25s;
+  box-shadow:0 0 0 rgba(255,255,255,0);
+}
+.hero-btn-primary:hover{background:#e8e8e8;transform:translateY(-3px);box-shadow:0 16px 48px rgba(255,255,255,.18)}
+.hero-btn-secondary{
+  padding:16px 30px;font-size:15.5px;font-weight:500;
+  color:#fff;background:var(--w06);
+  border:1px solid var(--w15);border-radius:10px;cursor:pointer;
+  transition:background .2s,border-color .2s;display:flex;align-items:center;gap:8px;
+}
+.hero-btn-secondary:hover{background:var(--w10);border-color:var(--w30)}
+.hero-note{
+  font-family:var(--mono);font-size:11.5px;color:var(--w30);letter-spacing:.07em;
+  animation:fadeUp .8s var(--ease-out) .38s both;
+}
+
+/* ── FLOATING CARDS ── */
+.hero-cards{
+  position:relative;width:100%;max-width:980px;margin:72px auto 0;
+  height:440px;
+  animation:fadeUp .9s var(--ease-out) .45s both;
+}
+/* main */
+.hc-main{
+  position:absolute;left:50%;top:0;transform:translateX(-50%);
+  width:700px;border-radius:14px;overflow:hidden;
+  background:linear-gradient(180deg,var(--ink4) 0%,var(--ink3) 100%);
+  border:1px solid var(--w10);
+  box-shadow:0 40px 120px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.04),inset 0 1px 0 rgba(255,255,255,.07);
+  animation:floatMain 7s ease-in-out infinite;
+}
+@keyframes floatMain{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-10px)}}
+.hc-title-bar{
+  height:38px;background:rgba(0,0,0,.3);border-bottom:1px solid var(--w06);
+  display:flex;align-items:center;padding:0 14px;gap:7px;
+}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot-r{background:#ff5f57}.dot-y{background:#ffbd2e}.dot-g{background:#28c840}
+.tbar-label{font-family:var(--mono);font-size:10px;color:var(--w30);margin-left:10px;letter-spacing:.06em}
+.hc-table{width:100%;border-collapse:collapse}
+.hc-table th{
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--w30);padding:9px 14px;background:rgba(255,255,255,.025);
+  border-bottom:1px solid var(--w06);text-align:left;font-weight:400;
+}
+.hc-table td{padding:9px 14px;font-size:12px;color:var(--w70);border-bottom:1px solid rgba(255,255,255,.035)}
+.hc-table tr{cursor:pointer;transition:background .15s}
+.hc-table tr:hover td{background:var(--w06)}
+.hc-table td.mf{font-family:var(--mono);font-size:11px}
+.tag-a{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:500;background:rgba(34,197,94,.1);color:#4ade80;border:1px solid rgba(34,197,94,.22)}
+.tag-a::before{content:'';width:5px;height:5px;border-radius:50%;background:#22c55e;flex-shrink:0}
+.tag-h{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:500;background:rgba(249,115,22,.1);color:#fb923c;border:1px solid rgba(249,115,22,.22)}
+.tag-h::before{content:'';width:5px;height:5px;border-radius:50%;background:#f97316;flex-shrink:0}
+
+/* side floaters */
+.hc-side{
+  position:absolute;
+  background:#fff;border-radius:12px;
+  box-shadow:0 20px 70px rgba(0,0,0,.55),0 0 0 1px rgba(0,0,0,.07);
+  color:#111;padding:16px;
+}
+.hc-s1{width:210px;left:-10px;top:80px;animation:floatL 6s ease-in-out 1.2s infinite}
+.hc-s2{width:195px;right:-10px;top:110px;animation:floatR 5.5s ease-in-out .6s infinite}
+@keyframes floatL{0%,100%{transform:rotate(-2deg) translateY(0)}50%{transform:rotate(-2deg) translateY(-12px)}}
+@keyframes floatR{0%,100%{transform:rotate(1.5deg) translateY(0)}50%{transform:rotate(1.5deg) translateY(-14px)}}
+.hcs-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#9ca3af;margin-bottom:7px}
+.hcs-val{font-size:28px;font-weight:800;letter-spacing:-.03em;line-height:1;color:#111}
+.hcs-sub{font-size:11.5px;color:#6b7280;margin-top:3px}
+.hcs-bars{display:flex;gap:3px;margin-top:12px;align-items:flex-end;height:32px}
+.hcs-bar{width:100%;border-radius:3px 3px 0 0;background:#f3f4f6;position:relative;flex:1}
+.hcs-bar-fill{position:absolute;bottom:0;left:0;right:0;border-radius:3px 3px 0 0;background:var(--grn)}
+.hcs-sms-num{font-weight:700;font-size:13px;color:#111}
+.hcs-sms-preview{font-size:11px;color:#6b7280;line-height:1.45;margin-top:3px}
+.hcs-sms-time{font-family:var(--mono);font-size:9.5px;color:#9ca3af;margin-top:6px}
+.hcs-sms-badge{
+  display:inline-block;margin-top:8px;
+  background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;
+  padding:2px 8px;border-radius:3px;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;
+}
+
+/* ════════════════════════════════════════════════════
+   TRUST STRIP
+════════════════════════════════════════════════════ */
+/* trust strip removed — replaced by ticker */
+
+/* ════════════════════════════════════════════════════
+   EVERYTHING YOU NEED  (dark pill block)
+════════════════════════════════════════════════════ */
+.eyn{padding:80px 0}
+.eyn-card{
+  border-radius:20px;overflow:hidden;position:relative;
+  background:var(--ink3);
+  border:1px solid var(--w10);
+  box-shadow:0 0 0 1px rgba(255,255,255,.04);
+}
+.eyn-glow{
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:100%;height:320px;pointer-events:none;
+  background:radial-gradient(ellipse at top,rgba(255,255,255,.05) 0%,transparent 65%);
+}
+.eyn-hero{
+  padding:72px 64px 80px;text-align:center;position:relative;z-index:1;
+  border-bottom:none;
+}
+.eyn-h{font-size:clamp(32px,4.5vw,54px);font-weight:800;letter-spacing:-.035em;line-height:1.05}
+.eyn-sub{font-size:17px;color:var(--w50);margin-top:14px;font-weight:300}
+.eyn-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  border-top:1px solid var(--w10);position:relative;z-index:1;
+}
+.eyn-item{
+  padding:36px 40px;border-right:1px solid var(--w10);
+  transition:background .2s;cursor:pointer;position:relative;overflow:hidden;
+  background:var(--ink3);
+}
+.eyn-item:last-child{border-right:none}
+.eyn-item::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);
+  opacity:0;transition:opacity .25s;
+}
+.eyn-item:hover::before{opacity:1}
+.eyn-item:hover{background:var(--ink4)}
+.eyn-icon{
+  width:44px;height:44px;border-radius:10px;
+  background:var(--w06);border:1px solid var(--w15);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:16px;transition:background .2s,border-color .2s,transform .25s var(--ease-out);
+}
+.eyn-item:hover .eyn-icon{background:var(--w10);border-color:var(--w30);transform:scale(1.08)}
+.eyn-item-title{font-size:15.5px;font-weight:600;margin-bottom:9px;color:#fff}
+.eyn-item-desc{font-size:13.5px;color:var(--w50);line-height:1.65;color:rgba(255,255,255,.5)}
+.eyn-arrow{
+  display:inline-flex;align-items:center;gap:5px;margin-top:16px;
+  font-size:13px;font-weight:500;color:rgba(255,255,255,.6);
+  transition:gap .2s,color .2s;
+}
+.eyn-item:hover .eyn-arrow{gap:9px;color:#fff}
+
+/* ════════════════════════════════════════════════════
+   FEATURE SECTIONS
+════════════════════════════════════════════════════ */
+.feat{padding:112px 0}
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:88px}
+.feat-grid.flip .feat-copy{order:2}
+.feat-grid.flip .feat-vis{order:1}
+
+.feat-copy{}
+.fc-badge{margin-bottom:22px}
+.fc-h{font-size:clamp(28px,3.2vw,42px);font-weight:800;letter-spacing:-.03em;line-height:1.08;margin-bottom:16px}
+.fc-h .muted{display:block;color:var(--w40,rgba(255,255,255,.4));font-weight:300;font-size:.76em;letter-spacing:-.015em;margin-top:4px}
+.fc-p{font-size:15.5px;color:var(--w50);line-height:1.75;margin-bottom:26px}
+.fc-list{list-style:none;display:flex;flex-direction:column;gap:11px}
+.fc-list li{display:flex;align-items:flex-start;gap:11px;font-size:14.5px;color:var(--w60,rgba(255,255,255,.6));line-height:1.5}
+.fc-check{
+  flex-shrink:0;width:18px;height:18px;border-radius:50%;
+  background:rgba(34,197,94,.08);border:1.5px solid rgba(34,197,94,.35);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10'%3E%3Cpath d='M2 5l2.5 2.5 3.5-4' stroke='%2322c55e' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:center;margin-top:2px;
+}
+
+/* ── FEATURE VISUAL FRAME ── */
+.feat-vis{
+  position:relative;border-radius:16px;
+}
+.feat-vis-frame{
+  border-radius:14px;overflow:hidden;
+  border:1px solid var(--w10);
+  box-shadow:0 40px 100px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.06);
+  background:var(--ink3);position:relative;
+}
+.feat-vis-frame::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:64px;
+  background:linear-gradient(transparent,var(--ink3));pointer-events:none;
+}
+/* glow accent top */
+.feat-vis-frame::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);
+}
+.fvf-bar{
+  height:38px;background:rgba(0,0,0,.25);border-bottom:1px solid var(--w06);
+  display:flex;align-items:center;padding:0 14px;gap:7px;
+}
+.fvf-label{font-family:var(--mono);font-size:10px;color:var(--w30);margin-left:10px;letter-spacing:.05em}
+.fvf-body{padding:0}
+
+/* table inside feat */
+.fv-table{width:100%;border-collapse:collapse}
+.fv-table th{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--w30);padding:9px 14px;background:rgba(255,255,255,.02);border-bottom:1px solid var(--w06);text-align:left;font-weight:400}
+.fv-table td{padding:10px 14px;font-size:12px;color:var(--w70);border-bottom:1px solid rgba(255,255,255,.03)}
+.fv-table tr{cursor:pointer;transition:background .13s}
+.fv-table tr:hover td{background:var(--w06)}
+.fv-table td.mf{font-family:var(--mono);font-size:11px}
+
+/* workspace feat */
+.fv-ws{display:grid;grid-template-columns:230px 1fr;min-height:320px}
+.fvws-left{border-right:1px solid var(--w06)}
+.fvws-tabs{display:flex;border-bottom:1px solid var(--w06);padding:0 14px}
+.fvws-tab{padding:10px 12px;font-size:12.5px;color:var(--w30);cursor:pointer;border-bottom:2px solid transparent;transition:color .15s}
+.fvws-tab.on{color:#fff;border-bottom-color:#fff}
+.fvws-conv{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .12s}
+.fvws-conv:hover,.fvws-conv.on{background:var(--w06)}
+.fvws-conv-n{font-weight:600;font-size:12.5px}
+.fvws-conv-m{font-size:11.5px;color:var(--w30);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:185px;margin-top:2px}
+.fvws-conv-t{font-family:var(--mono);font-size:9.5px;color:var(--w30);margin-top:4px}
+.fvws-right{display:flex;flex-direction:column;justify-content:center;padding:24px;gap:10px}
+.fvws-bubble{
+  max-width:85%;padding:11px 14px;border-radius:10px;
+  font-size:12.5px;line-height:1.5;
+  background:var(--w06);color:var(--w70);border:1px solid var(--w06);
+}
+.fvws-bubble.out{
+  align-self:flex-end;
+  background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);
+  border-color:rgba(255,255,255,.15);
+}
+.fvws-time{font-family:var(--mono);font-size:9.5px;color:var(--w30);margin-top:4px;text-align:right}
+
+/* dashboard feat */
+.fv-dash{padding:16px}
+.fvd-header{font-size:15px;font-weight:600;margin-bottom:16px}
+.fvd-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.fvd-stat{background:var(--w06);border:1px solid var(--w06);border-radius:7px;padding:12px}
+.fvd-stat-l{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--w30);margin-bottom:5px}
+.fvd-stat-v{font-size:20px;font-weight:700;letter-spacing:-.02em}
+.fvd-stat-v em{color:#fff;font-style:normal}
+.fvd-stat-d{font-size:11px;margin-top:2px}
+.fvd-task{background:var(--w06);border:1px solid rgba(255,255,255,.05);border-radius:6px;padding:11px 13px;margin-bottom:7px}
+.fvd-task:last-child{margin-bottom:0}
+.fvd-task-h{font-size:12.5px;font-weight:600;margin-bottom:5px}
+.fvd-task-m{font-family:var(--mono);font-size:10px;color:var(--w30);display:flex;gap:14px;flex-wrap:wrap}
+
+/* ════════════════════════════════════════════════════
+   HOW IT WORKS
+════════════════════════════════════════════════════ */
+.hiw{padding:100px 0;background:rgba(255,255,255,.012)}
+.hiw-header{text-align:center;margin-bottom:64px}
+.section-badge{display:flex;justify-content:center;margin-bottom:20px}
+.section-h{font-size:clamp(30px,4vw,50px);font-weight:800;letter-spacing:-.035em;line-height:1.05;margin-bottom:12px}
+.section-h .dim{color:var(--w40,rgba(255,255,255,.4));font-weight:300}
+.hiw-steps{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:1px;background:var(--w06);
+  border:1px solid var(--w06);border-radius:14px;overflow:hidden;
+}
+.hiw-step{
+  background:var(--ink3);padding:30px 26px;
+  position:relative;overflow:hidden;transition:background .2s;
+}
+.hiw-step:hover{background:var(--ink4)}
+.hiw-step::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);
+  opacity:0;transition:opacity .3s;
+}
+.hiw-step:hover::after{opacity:1}
+.step-n{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--w25,rgba(255,255,255,.25));margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.step-n::before{content:'';width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Ccircle cx='4' cy='4' r='2' fill='%23ffffff'/%3E%3C/svg%3E");background-position:center;background-repeat:no-repeat}
+.step-title{font-size:15px;font-weight:700;margin-bottom:9px}
+.step-body{font-size:13px;color:var(--w45,rgba(255,255,255,.45));line-height:1.6}
+
+/* ════════════════════════════════════════════════════
+   SOCIAL PROOF
+════════════════════════════════════════════════════ */
+.proof{padding:100px 0}
+.proof-header{text-align:center;margin-bottom:56px}
+.proof-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.proof-card{
+  background:var(--ink3);border:1px solid var(--w06);border-radius:14px;
+  padding:28px;transition:border-color .25s,transform .3s var(--ease-out);
+  position:relative;overflow:hidden;
+}
+.proof-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.03) 0%,transparent 60%);
+  opacity:0;transition:opacity .3s;
+}
+.proof-card:hover::before{opacity:1}
+.proof-card:hover{border-color:var(--w15);transform:translateY(-4px)}
+.proof-stars{color:#fff;font-size:14px;letter-spacing:3px;margin-bottom:16px}
+.proof-text{font-size:14px;color:var(--w60,rgba(255,255,255,.6));line-height:1.75;font-style:italic;margin-bottom:20px}
+.proof-rule{height:1px;background:var(--w06);margin-bottom:16px}
+.proof-author{display:flex;align-items:center;gap:12px}
+.proof-av{
+  width:34px;height:34px;border-radius:50%;
+  background:linear-gradient(135deg,var(--ink5),var(--ink4));
+  border:1px solid var(--w10);
+  font-family:var(--mono);font-size:11px;font-weight:500;color:var(--w60,rgba(255,255,255,.6));
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.proof-name{font-size:13.5px;font-weight:600}
+.proof-role{font-family:var(--mono);font-size:10px;color:var(--w30);margin-top:1px}
+
+/* ════════════════════════════════════════════════════
+   PRICING
+════════════════════════════════════════════════════ */
+.pricing{padding:112px 0;position:relative;overflow:hidden}
+.pricing-glow{
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:900px;height:500px;pointer-events:none;
+  background:radial-gradient(ellipse at top,rgba(255,255,255,.04) 0%,transparent 65%);
+}
+.pricing-header{text-align:center;margin-bottom:56px}
+/* billing toggle */
+.billing-toggle{
+  display:inline-flex;align-items:center;
+  background:var(--ink3);border:1px solid var(--w10);
+  border-radius:999px;padding:4px;margin-top:24px;
+}
+.bt-opt{
+  padding:8px 22px;border-radius:999px;
+  font-size:13.5px;font-weight:500;cursor:pointer;
+  transition:background .25s,color .25s;color:var(--w50);
+}
+.bt-opt.on{background:#fff;color:#000;font-weight:600}
+.bt-save{
+  font-family:var(--mono);font-size:9.5px;background:rgba(34,197,94,.12);
+  color:#4ade80;border:1px solid rgba(34,197,94,.22);
+  padding:2px 8px;border-radius:999px;margin-left:4px;letter-spacing:.06em;
+}
+
+/* plan cards */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+.plan{
+  background:var(--ink3);border:1px solid var(--w06);border-radius:16px;
+  padding:36px;position:relative;overflow:hidden;transition:border-color .25s,transform .3s var(--ease-out);
+}
+.plan:hover{border-color:var(--w15);transform:translateY(-4px)}
+.plan.featured{
+  background:linear-gradient(160deg,var(--ink4) 0%,#1a1a1a 100%);
+  border-color:rgba(255,255,255,.22);
+  box-shadow:0 0 80px rgba(255,255,255,.04);
+}
+.plan.featured:hover{transform:translateY(-6px);box-shadow:0 20px 80px rgba(255,255,255,.08)}
+.plan-top-accent{
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);
+  opacity:0;
+}
+.plan.featured .plan-top-accent{opacity:1}
+.plan-pop{
+  position:absolute;top:20px;right:20px;
+  display:flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;
+  background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.2);
+  padding:4px 10px;border-radius:999px;
+}
+.plan-name{font-size:20px;font-weight:700;margin-bottom:10px}
+.plan-price{margin-bottom:6px;display:flex;align-items:baseline;gap:3px}
+.plan-price-num{font-size:44px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.plan-price-num.beta{font-size:36px;color:#fff}
+.plan-price-mo{font-size:15px;color:var(--w50)}
+.plan-desc{font-size:13.5px;color:var(--w50);line-height:1.6;margin:16px 0 24px;padding-top:16px;border-top:1px solid var(--w06)}
+.plan-divider{height:1px;background:var(--w06);margin:20px 0}
+.plan-list{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:28px}
+.plan-list li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--w70);line-height:1.5}
+.plan-li-check{
+  flex-shrink:0;width:17px;height:17px;border-radius:50%;margin-top:2px;
+  background:rgba(34,197,94,.08);border:1.5px solid rgba(34,197,94,.3);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9'%3E%3Cpath d='M1.5 4.5l2 2 3.5-4' stroke='%2322c55e' stroke-width='1.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:center;
+}
+.plan-li-check.gold{
+  background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.25);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9'%3E%3Cpath d='M1.5 4.5l2 2 3.5-4' stroke='%23ffffff' stroke-width='1.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:center;
+}
+.plan-btn{
+  width:100%;padding:13px;border-radius:9px;
+  font-family:var(--ff);font-size:14.5px;font-weight:600;
+  cursor:pointer;transition:all .2s var(--ease-out);border:none;
+  margin-top:auto;
+}
+.plan-btn.ghost{
+  background:rgba(255,255,255,.06);color:#fff;border:1px solid var(--w15);
+}
+.plan-btn.ghost:hover{background:rgba(255,255,255,.12);border-color:var(--w30)}
+.plan-btn.primary{
+  background:#fff;color:#000 !important;isolation:isolate;
+}
+.plan-btn.primary:hover{background:#e8e8e8;box-shadow:0 8px 28px rgba(255,255,255,.15);transform:translateY(-1px)}
+.plan-note{font-family:var(--mono);font-size:10px;color:var(--w25,rgba(255,255,255,.25));text-align:center;margin-top:10px;letter-spacing:.06em}
+
+/* ════════════════════════════════════════════════════
+   CTA / FORM
+════════════════════════════════════════════════════ */
+.cta-section{padding:120px 0;position:relative;overflow:hidden}
+.cta-glow{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:1000px;height:600px;pointer-events:none;
+  background:radial-gradient(ellipse,rgba(255,255,255,.04) 0%,transparent 65%);
+}
+.cta-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start}
+.cta-copy .section-h{margin-bottom:20px}
+.cta-copy p{font-size:16px;color:var(--w50);line-height:1.75;margin-bottom:30px}
+.cta-list{list-style:none;display:flex;flex-direction:column;gap:13px;margin-bottom:0}
+.cta-list li{display:flex;align-items:center;gap:11px;font-size:14.5px;color:var(--w60,rgba(255,255,255,.6))}
+.cta-check-wrap{
+  width:20px;height:20px;border-radius:50%;flex-shrink:0;
+  background:rgba(34,197,94,.08);border:1.5px solid rgba(34,197,94,.3);
+  display:flex;align-items:center;justify-content:center;
+}
+/* form */
+.form-wrap{
+  background:rgba(255,255,255,.04);border:1px solid var(--w10);
+  border-radius:16px;padding:34px;backdrop-filter:blur(10px);
+  position:relative;overflow:hidden;
+}
+.form-wrap::before{
+  content:'';position:absolute;top:0;left:10%;right:10%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);
+}
+.form-title{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--w30);margin-bottom:22px}
+.fg{margin-bottom:14px}
+.fl-lbl{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--w30);margin-bottom:6px}
+.f-in{
+  width:100%;background:rgba(255,255,255,.055);border:1px solid var(--w10);
+  border-radius:8px;padding:11px 14px;
+  font-family:var(--ff);font-size:14px;color:#fff;outline:none;
+  transition:border-color .2s,background .2s;
+}
+.f-in:focus{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.08)}
+.f-in::placeholder{color:var(--w25,rgba(255,255,255,.25))}
+.f-in option{background:var(--ink3);color:#fff}
+.f-row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.f-sub{
+  width:100%;padding:13px;background:#fff;border:none;
+  border-radius:9px;font-family:var(--ff);font-size:15px;font-weight:700;
+  color:#000 !important;cursor:pointer;margin-top:6px;
+  isolation:isolate;
+  transition:background .2s,transform .25s var(--ease-out),box-shadow .25s;
+}
+.f-sub:hover{background:#e8e8e8;transform:translateY(-2px);box-shadow:0 10px 32px rgba(255,255,255,.15)}
+.f-note{font-family:var(--mono);font-size:9.5px;color:var(--w25,rgba(255,255,255,.25));text-align:center;margin-top:10px;letter-spacing:.06em}
+.form-success{display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 20px;gap:14px}
+.fs-icon{width:52px;height:52px;border-radius:50%;background:rgba(34,197,94,.1);border:1.5px solid rgba(34,197,94,.3);display:flex;align-items:center;justify-content:center}
+.fs-t{font-size:18px;font-weight:700}
+.fs-s{font-size:14px;color:var(--w50)}
+
+/* ════════════════════════════════════════════════════
+   FOOTER
+════════════════════════════════════════════════════ */
+footer{border-top:1px solid var(--w06);padding:44px 0;background:var(--ink2)}
+.footer-grid{
+  max-width:var(--max);margin:0 auto;padding:0 36px;
+  display:flex;align-items:flex-start;justify-content:space-between;
+  gap:32px;flex-wrap:wrap;
+}
+.footer-brand-name{font-size:16px;font-weight:700;color:#fff;margin-bottom:8px}
+.footer-brand-name span{color:#fff;opacity:.6}
+.footer-tagline{font-family:var(--mono);font-size:10.5px;color:var(--w30);letter-spacing:.08em}
+.footer-links-col h4{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--w30);margin-bottom:14px}
+.footer-links-col a{display:block;font-size:13.5px;color:var(--w50);margin-bottom:10px;transition:color .15s}
+.footer-links-col a:hover{color:#fff}
+.footer-bottom{
+  max-width:var(--max);margin:28px auto 0;padding:20px 36px 0;
+  border-top:1px solid var(--w06);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+}
+.footer-copy{font-family:var(--mono);font-size:10px;color:var(--w25,rgba(255,255,255,.25));letter-spacing:.06em}
+
+/* ════════════════════════════════════════════════════
+   TOAST
+════════════════════════════════════════════════════ */
+#toast{
+  position:fixed;bottom:26px;right:26px;z-index:9990;
+  background:rgba(20,20,20,.96);border:1px solid rgba(255,255,255,.18);
+  border-radius:12px;padding:16px 20px;
+  display:flex;align-items:center;gap:12px;
+  transform:translateY(80px);opacity:0;
+  transition:transform .4s var(--ease-out),opacity .4s;
+  box-shadow:0 20px 60px rgba(0,0,0,.65);
+  backdrop-filter:blur(20px);
+}
+#toast.show{transform:none;opacity:1}
+.toast-dot{width:8px;height:8px;border-radius:50%;background:#fff;flex-shrink:0}
+.toast-t{font-weight:600;font-size:13.5px;color:#fff;margin-bottom:2px}
+.toast-s{font-size:12px;color:var(--w50)}
+
+/* ════════════════════════════════════════════════════
+   MOTION UPGRADES
+════════════════════════════════════════════════════ */
+
+/* ── SCROLLING TICKER (replaces static trust strip) ── */
+.ticker-outer{
+  border-top:1px solid var(--w06);
+  border-bottom:1px solid var(--w06);
+  background:var(--ink2);
+  padding:0;overflow:hidden;position:relative;
+}
+.ticker-outer::before,.ticker-outer::after{
+  content:'';position:absolute;top:0;bottom:0;width:120px;z-index:2;pointer-events:none;
+}
+.ticker-outer::before{left:0;background:linear-gradient(90deg,var(--ink2),transparent)}
+.ticker-outer::after{right:0;background:linear-gradient(270deg,var(--ink2),transparent)}
+.ticker-track{
+  display:flex;width:max-content;
+  animation:tickerMove 32s linear infinite;
+  padding:18px 0;
+}
+.ticker-track:hover{animation-play-state:paused}
+@keyframes tickerMove{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.ticker-item{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:0 52px;
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;
+  color:var(--w50);white-space:nowrap;
+  border-right:1px solid var(--w06);
+}
+.ticker-item:last-child{border-right:none}
+.ticker-val{font-size:20px;font-weight:800;letter-spacing:-.02em;color:#fff;font-family:var(--ff)}
+.ticker-lbl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--w30);margin-top:1px}
+.ticker-block{display:flex;flex-direction:column;align-items:center}
+.ticker-sep{width:1px;height:32px;background:var(--w06);flex-shrink:0}
+.ticker-dot-live{width:6px;height:6px;border-radius:50%;background:var(--grn);animation:pulse 2s ease-in-out infinite;flex-shrink:0}
+
+/* ── PRICING equal height ── */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:stretch}
+.plan{
+  background:var(--ink3);border:1px solid var(--w06);border-radius:16px;
+  padding:36px;position:relative;overflow:hidden;
+  transition:border-color .25s,transform .3s var(--ease-out),box-shadow .3s;
+  display:flex;flex-direction:column;
+}
+.plan-list{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:28px;flex:1}
+.plan:hover{border-color:var(--w15);transform:translateY(-4px)}
+
+/* ── BETA STRIP — eye-catching black design ── */
+.beta-strip{
+  margin-top:32px;
+  border-radius:14px;overflow:hidden;
+  border:1px solid var(--w15);
+  background:var(--ink3);
+  position:relative;
+}
+.beta-strip::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(
+    90deg,
+    transparent 0px,
+    transparent 40px,
+    rgba(255,255,255,.018) 40px,
+    rgba(255,255,255,.018) 41px
+  );
+  pointer-events:none;
+}
+.beta-strip::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.4) 30%,rgba(255,255,255,.8) 50%,rgba(255,255,255,.4) 70%,transparent 100%);
+}
+.beta-inner{
+  display:flex;align-items:center;gap:0;
+  position:relative;z-index:1;
+}
+.beta-left{
+  padding:28px 36px;
+  border-right:1px solid var(--w06);
+  flex-shrink:0;
+}
+.beta-tag{
+  display:inline-flex;align-items:center;gap:7px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--w70);margin-bottom:10px;
+}
+.beta-tag-dot{width:5px;height:5px;border-radius:50%;background:#fff;animation:pulse 2s ease-in-out infinite}
+.beta-heading{font-size:22px;font-weight:800;letter-spacing:-.02em;line-height:1.1;color:#fff}
+.beta-heading span{color:var(--w50);font-weight:300}
+.beta-right{
+  flex:1;padding:28px 36px;
+  display:flex;align-items:center;justify-content:space-between;gap:28px;flex-wrap:wrap;
+}
+.beta-desc{font-size:14.5px;color:var(--w50);line-height:1.65;max-width:480px}
+.beta-desc strong{color:#fff;font-weight:600}
+.beta-cta{
+  flex-shrink:0;
+  padding:13px 28px;
+  background:#fff;color:#000 !important;
+  border:none;border-radius:9px;
+  font-family:var(--ff);font-size:14px;font-weight:700;
+  cursor:pointer;isolation:isolate;
+  transition:background .2s,transform .2s var(--ease-out),box-shadow .2s;
+  white-space:nowrap;display:inline-block;
+}
+.beta-cta:hover{background:#e8e8e8;transform:translateY(-2px);box-shadow:0 10px 32px rgba(255,255,255,.15)}
+
+/* ── PLAN NOTE invisible fix ── */
+.plan-note{
+  font-family:var(--mono);font-size:10px;
+  color:rgba(255,255,255,.35);
+  text-align:center;margin-top:10px;letter-spacing:.06em;
+  border-top:1px solid var(--w06);padding-top:10px;
+}
+
+/* ── Table row scan effect ── */
+.hc-row-scanning td{background:rgba(255,255,255,.06)!important;transition:background .3s}
+.hc-row-new td{animation:rowFlash .8s ease both}
+@keyframes rowFlash{
+  0%{background:rgba(255,255,255,.12)}
+  100%{background:transparent}
+}
+
+/* ── Typing indicator ── */
+.typing-indicator{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:8px 14px;background:var(--w06);border:1px solid var(--w06);
+  border-radius:10px;
+}
+.typing-dot{
+  width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.4);
+  animation:typingBounce 1.4s ease-in-out infinite;
+}
+.typing-dot:nth-child(2){animation-delay:.2s}
+.typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes typingBounce{
+  0%,60%,100%{transform:translateY(0);opacity:.4}
+  30%{transform:translateY(-5px);opacity:1}
+}
+
+/* ── Feature visual tilt on hover ── */
+.feat-vis{perspective:1000px}
+.feat-vis-frame{
+  transform-style:preserve-3d;
+  transition:transform .5s var(--ease-out),box-shadow .5s var(--ease-out);
+}
+.feat-vis:hover .feat-vis-frame{
+  transform:rotateY(-3deg) rotateX(1.5deg) scale(1.015);
+  box-shadow:0 60px 140px rgba(0,0,0,.75),24px 0 60px rgba(0,0,0,.3);
+}
+
+/* ── Notification pop ── */
+.notif-pop{
+  position:absolute;right:-16px;top:-16px;z-index:10;
+  background:#fff;color:#000;border-radius:10px;
+  padding:10px 14px;min-width:200px;
+  box-shadow:0 16px 48px rgba(0,0,0,.5);
+  animation:notifBounceIn .6s var(--ease-out) 1.2s both;
+  font-size:12px;
+}
+@keyframes notifBounceIn{
+  0%{opacity:0;transform:scale(.7) translateY(12px)}
+  70%{transform:scale(1.05) translateY(-3px)}
+  100%{opacity:1;transform:scale(1) translateY(0)}
+}
+.notif-pop-title{font-weight:700;font-size:13px;color:#111;margin-bottom:3px;display:flex;align-items:center;gap:6px}
+.notif-pop-sub{color:#6b7280;font-size:11.5px}
+.notif-green-dot{width:8px;height:8px;border-radius:50%;background:var(--grn);flex-shrink:0;animation:pulse 1.5s ease-in-out infinite}
+
+/* ── Scroll-driven progress bar ── */
+#scroll-progress{
+  position:fixed;top:0;left:0;height:2px;width:0%;
+  background:linear-gradient(90deg,rgba(255,255,255,.3),#fff,rgba(255,255,255,.3));
+  z-index:9000;transition:width .05s linear;
+  box-shadow:0 0 8px rgba(255,255,255,.5);
+}
+
+/* ── Section entrance with slide from side ── */
+.slide-left{opacity:0;transform:translateX(-40px);transition:opacity .7s var(--ease-out),transform .7s var(--ease-out)}
+.slide-right{opacity:0;transform:translateX(40px);transition:opacity .7s var(--ease-out),transform .7s var(--ease-out)}
+.slide-left.in,.slide-right.in{opacity:1;transform:none}
+
+/* ticker vals animate on scroll */
+.ticker-val{animation:countUp .7s var(--ease-out) both}
+@keyframes countUp{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* ── Proof card stagger ── */
+.proof-card{transition:border-color .25s,transform .4s var(--ease-out),box-shadow .4s var(--ease-out)}
+.proof-card:nth-child(1){transition-delay:0s}
+.proof-card:nth-child(2){transition-delay:.08s}
+.proof-card:nth-child(3){transition-delay:.16s}
+
+/* ── Step card stagger ── */
+.hiw-step:nth-child(1){transition-delay:.05s}
+.hiw-step:nth-child(2){transition-delay:.12s}
+.hiw-step:nth-child(3){transition-delay:.19s}
+.hiw-step:nth-child(4){transition-delay:.26s}
+
+@keyframes typingBounce{
+  0%,60%,100%{transform:translateY(0);opacity:.4}
+  30%{transform:translateY(-5px);opacity:1}
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:translateY(0)}}
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .65s var(--ease-out),transform .65s var(--ease-out)}
+.reveal.in{opacity:1;transform:none}
+.reveal.d1{transition-delay:.1s}.reveal.d2{transition-delay:.2s}.reveal.d3{transition-delay:.3s}
+
+/* ════════════════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════════════════ */
+@media(max-width:1024px){
+  .feat-grid{grid-template-columns:1fr;gap:52px}
+  .feat-grid.flip .feat-copy,.feat-grid.flip .feat-vis{order:unset}
+  .cta-grid{grid-template-columns:1fr;gap:52px}
+  .hc-s1,.hc-s2{display:none}
+  .hc-main{width:calc(100% - 32px);left:16px;transform:none;animation:floatMob 7s ease-in-out infinite}
+  @keyframes floatMob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+}
+@media(max-width:900px){
+  .nav-links,.nav-r{display:none}
+  .nav-hamburger{display:flex}
+  .eyn-grid{grid-template-columns:1fr}
+  .eyn-item{border-right:none;border-bottom:1px solid var(--w06)}
+  .eyn-item:last-child{border-bottom:none}
+  .hiw-steps{grid-template-columns:1fr 1fr}
+  .proof-grid{grid-template-columns:1fr}
+  .pricing-grid{grid-template-columns:1fr;max-width:440px;margin:0 auto}
+  .wrap{padding:0 20px}
+  .hiw,.proof,.pricing,.cta-section{padding:72px 0}
+  .feat{padding:80px 0}
+}
+@media(max-width:600px){
+  .hero-actions{flex-direction:column;width:100%}
+  .hero-btn-primary,.hero-btn-secondary{width:100%;justify-content:center}
+  .hiw-steps{grid-template-columns:1fr}
+  .f-row2{grid-template-columns:1fr}
+  .trust-divider{display:none}
+  /* trust strip removed */
+  .ticker-outer::before,.ticker-outer::after{width:60px}
+  footer .footer-grid{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<!-- SCROLL PROGRESS -->
+<div id="scroll-progress"></div>
+
+<!-- CURSOR -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- ══════════════════════════════════════════════
+     NAV
+══════════════════════════════════════════════ -->
+<nav id="nav">
+  <a class="nav-logo" href="#">
+    <div class="nav-logo-mark">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M8 1.5L2 5V11L8 14.5L14 11V5L8 1.5Z" stroke="#ffffff" stroke-width="1.2" fill="none"/>
+        <circle cx="8" cy="8" r="2.2" fill="#ffffff"/>
+      </svg>
+    </div>
+    <span class="nav-logo-text">Vonkam<b>Data</b></span>
+  </a>
+
+  <div class="nav-links">
+    <a class="nl" href="#features">Features <svg class="nl-chevron" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2.5 4L5 6.5L7.5 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></a>
+    <a class="nl" href="#contacts-feat">Contacts</a>
+    <a class="nl" href="#workspace-feat">Workspace</a>
+    <a class="nl" href="#how-it-works">How It Works</a>
+    <a class="nl" href="#pricing">Pricing</a>
+  </div>
+
+  <div class="nav-r">
+    <a class="btn-outline" href="#cta">Log in</a>
+    <a class="btn-cta" href="#cta">
+      Get early access
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2.5 6.5h8M7 3L10.5 6.5 7 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </div>
+
+  <div class="nav-hamburger" onclick="toggleMob()">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 5h12M3 9h12M3 13h12" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
+  </div>
+</nav>
+
+<!-- mob menu -->
+<div class="mob-menu" id="mobMenu">
+  <a class="mob-link" href="#features" onclick="toggleMob()">Features</a>
+  <a class="mob-link" href="#contacts-feat" onclick="toggleMob()">Contacts</a>
+  <a class="mob-link" href="#workspace-feat" onclick="toggleMob()">Workspace</a>
+  <a class="mob-link" href="#how-it-works" onclick="toggleMob()">How It Works</a>
+  <a class="mob-link" href="#pricing" onclick="toggleMob()">Pricing</a>
+  <div class="mob-sep"></div>
+  <a class="mob-link" href="#cta" onclick="toggleMob()" style="color:#fff;font-weight:600">Get Early Access →</a>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     HERO
+══════════════════════════════════════════════ -->
+<section class="hero" id="home">
+  <div class="hero-bg-layer">
+    <div class="hero-bg-radial"></div>
+    <div class="hero-bg-gold"></div>
+    <div class="hero-grid-lines"></div>
+    <div class="hero-vignette"></div>
+  </div>
+
+  <div class="hero-inner">
+    <div class="hero-badge">
+      <span class="badge"><span class="badge-dot"></span>Now in Private Beta · South Florida</span>
+    </div>
+
+    <h1 class="hero-h1">
+      The fastest path to<br>consistent closings.
+      <span class="dim">Pre-foreclosure intelligence. Built for investors.</span>
+    </h1>
+
+    <p class="hero-sub">
+      VonkamData puts 312+ live distressed cases in front of you before the market does — with automated outreach, a unified inbox, and deal pipeline management built for South Florida.
+    </p>
+
+    <div class="hero-actions">
+      <a class="hero-btn-primary" href="#cta">Get early access — it's free</a>
+      <a class="hero-btn-secondary" href="#features">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 5.5C5.5 4.67 6.17 4 7 4s1.5.67 1.5 1.5c0 .83-.67 1.5-1.5 1.5v1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="7" cy="10.5" r=".6" fill="currentColor"/></svg>
+        See how it works
+      </a>
+    </div>
+    <div class="hero-note">Free during beta · Florida-based investors only · No credit card required</div>
+  </div>
+
+  <!-- FLOATING UI CARDS -->
+  <div class="hero-cards">
+    <div style="position:relative;width:100%;max-width:980px;margin:0 auto;height:440px">
+
+      <!-- Side: stats -->
+      <div class="hc-side hc-s1">
+        <div class="hcs-eyebrow">Miami-Dade · Live</div>
+        <div class="hcs-val">287</div>
+        <div class="hcs-sub">Active pre-foreclosure cases</div>
+        <div class="hcs-bars">
+          <div class="hcs-bar"><div class="hcs-bar-fill" style="height:70%"></div></div>
+          <div class="hcs-bar"><div class="hcs-bar-fill" style="height:90%"></div></div>
+          <div class="hcs-bar"><div class="hcs-bar-fill" style="height:55%"></div></div>
+          <div class="hcs-bar"><div class="hcs-bar-fill" style="height:80%;background:var(--ora)"></div></div>
+          <div class="hcs-bar"><div class="hcs-bar-fill" style="height:65%;background:var(--ora)"></div></div>
+          <div class="hcs-bar"><div class="hcs-bar-fill" style="height:30%"></div></div>
+          <div class="hcs-bar"></div>
+        </div>
+      </div>
+
+      <!-- Main table -->
+      <div class="hc-main">
+        <div class="hc-title-bar">
+          <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+        <span class="tbar-label">vonkamdata — contacts · miami dataset</span>
+        </div>
+        <div style="padding:10px 14px;background:rgba(0,0,0,.15);border-bottom:1px solid var(--w06);display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:15px;font-weight:700">My Contacts</span>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span style="font-family:var(--mono);font-size:10px;color:var(--w30);background:var(--w06);border:1px solid var(--w06);padding:5px 11px;border-radius:4px">Search cases...</span>
+            <span style="font-size:11px;color:var(--w50);background:var(--w06);border:1px solid var(--w10);padding:5px 10px;border-radius:4px">Filters</span>
+            <span style="font-size:11.5px;font-weight:600;background:#fff;color:#111;padding:5px 10px;border-radius:4px;cursor:pointer">+ Add</span>
+          </div>
+        </div>
+        <table class="hc-table">
+          <thead><tr>
+            <th>Case #</th><th>Status</th><th>Address</th><th>City</th><th>Zip</th><th>Owner</th>
+          </tr></thead>
+          <tbody>
+            <tr><td class="mf">2025-041287-CA-01</td><td><span class="tag-a">Active</span></td><td>8821 NW 14 AVE</td><td>MIAMI</td><td class="mf">33147</td><td>JAMES R. CALDWELL</td></tr>
+            <tr><td class="mf">2024-098341-CA-01</td><td><span class="tag-h">HotClose</span></td><td>1144 SW 67 CT</td><td>MIAMI</td><td class="mf">33144</td><td>PATRICIA NGUYEN</td></tr>
+            <tr><td class="mf">2025-033109-CA-01</td><td><span class="tag-h">HotClose</span></td><td>3305 NW 183 ST</td><td>Miami Gardens</td><td class="mf">33056</td><td>CARLOS E. RUIZ</td></tr>
+            <tr><td class="mf">2023-071452-CA-01</td><td><span class="tag-a">Active</span></td><td>722 NE 128 ST</td><td>North Miami</td><td class="mf">33161</td><td>DENISE WALKER</td></tr>
+            <tr><td class="mf">2025-019876-FC-04</td><td><span class="tag-a">Active</span></td><td>5507 SW 98 AVE</td><td>MIAMI</td><td class="mf">33165</td><td>ROBERT T. MASON</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Side: SMS -->
+      <div class="hc-side hc-s2">
+        <div class="hcs-sms-num">(305) 448-7821</div>
+        <div class="hcs-sms-preview">Hey James, just reaching out about your property on NW 14 Ave. We help homeowners in tough situations — no obligation to chat.</div>
+        <div class="hcs-sms-time">2 hours ago</div>
+        <div class="hcs-sms-badge">Awaiting Reply</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCROLLING TICKER (replaces static strip) -->
+<div class="ticker-outer">
+  <div class="ticker-track" id="ticker">
+    <!-- Set 1 -->
+    <div class="ticker-item">
+      <span class="ticker-dot-live"></span>
+      <div class="ticker-block"><div class="ticker-val">312</div><div class="ticker-lbl">Miami-Dade Cases</div></div>
+    </div>
+    <div class="ticker-item">
+      <div class="ticker-block"><div class="ticker-val">72h</div><div class="ticker-lbl">Avg. Lead Advantage</div></div>
+    </div>
+    <div class="ticker-item">
+      <div class="ticker-block"><div class="ticker-val">2×/wk</div><div class="ticker-lbl">Auto Data Refresh</div></div>
+    </div>
+    <div class="ticker-item">
+      <div class="ticker-block"><div class="ticker-val">$0</div><div class="ticker-lbl">Beta Access Cost</div></div>
+    </div>
+    <div class="ticker-item">
+      <span class="ticker-dot-live"></span>
+      <div class="ticker-block"><div class="ticker-val">44</div><div class="ticker-lbl">Broward Cases</div></div>
+    </div>
+    <div class="ticker-item">
+      <div class="ticker-block"><div class="ticker-val">&lt;24h</div><div class="ticker-lbl">New Case Alert</div></div>
+    </div>
+    <div class="ticker-item">
+      <div class="ticker-block"><div class="ticker-val">Mon + Thu</div><div class="ticker-lbl">Scrape Schedule</div></div>
+    </div>
+    <div class="ticker-item">
+      <div class="ticker-block"><div class="ticker-val">FL Only</div><div class="ticker-lbl">Market Focus</div></div>
+    </div>
+    <!-- Set 2 — exact duplicate for seamless loop -->
+    <div class="ticker-item">
+      <span class="ticker-dot-live"></span>
+      <div class="ticker-block"><div class="ticker-val">312</div><div class="ticker-lbl">Miami-Dade Cases</div></div>
+    </div>
+    <div class="ticker-item">
+      <div class="ticker-block"><div class="ticker-val">72h</div><div class="ticker-lbl">Avg. Lead Advantage</div></div>
+    </div>
+    <div class="ticker-item">
+      <div class="ticker-block"><div class="ticker-val">2×/wk</div><div class="ticker-lbl">Auto Data Refresh</div></div>
+    </div>
+    <div class="ticker-item">
+      <div class="ticker-block"><div class="ticker-val">$0</div><div class="ticker-lbl">Beta Access Cost</div></div>
+    </div>
+    <div class="ticker-item">
+      <span class="ticker-dot-live"></span>
+      <div class="ticker-block"><div class="ticker-val">44</div><div class="ticker-lbl">Broward Cases</div></div>
+    </div>
+    <div class="ticker-item">
+      <div class="ticker-block"><div class="ticker-val">&lt;24h</div><div class="ticker-lbl">New Case Alert</div></div>
+    </div>
+    <div class="ticker-item">
+      <div class="ticker-block"><div class="ticker-val">Mon + Thu</div><div class="ticker-lbl">Scrape Schedule</div></div>
+    </div>
+    <div class="ticker-item">
+      <div class="ticker-block"><div class="ticker-val">FL Only</div><div class="ticker-lbl">Market Focus</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     EVERYTHING YOU NEED
+══════════════════════════════════════════════ -->
+<div class="eyn" id="features">
+  <div class="wrap">
+    <div class="eyn-card reveal">
+      <div class="eyn-glow"></div>
+      <div class="eyn-hero">
+        <div class="badge" style="margin-bottom:20px;display:inline-flex"><span class="badge-dot"></span>Platform Overview</div>
+        <h2 class="eyn-h">Everything you need to close.</h2>
+        <p class="eyn-sub">One platform. Every tool from lead discovery to signed contract.</p>
+      </div>
+      <div class="eyn-grid">
+        <a class="eyn-item" href="#contacts-feat">
+          <div class="eyn-icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="4" stroke="rgba(255,255,255,.7)" stroke-width="1.3"/><path d="M2 17c0-4 3.58-7 8-7s8 3 8 7" stroke="rgba(255,255,255,.7)" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </div>
+          <div class="eyn-item-title">Live Contact Intelligence</div>
+          <div class="eyn-item-desc">Real-time pre-foreclosure data from county records — enriched with owner info, address, and status classification updated twice weekly.</div>
+          <div class="eyn-arrow">Explore Contacts <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6h7M6 2.5L9.5 6 6 9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </a>
+        <a class="eyn-item" href="#workspace-feat">
+          <div class="eyn-icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 4h14v10H3z" stroke="rgba(255,255,255,.7)" stroke-width="1.3" stroke-linejoin="round"/><path d="M7 17h6M10 14v3" stroke="rgba(255,255,255,.7)" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </div>
+          <div class="eyn-item-title">Unified Inbox</div>
+          <div class="eyn-item-desc">Calls, texts, and emails with every homeowner in one workspace — threaded by case. AI-assisted follow-ups keep your pipeline moving.</div>
+          <div class="eyn-arrow">Explore Workspace <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6h7M6 2.5L9.5 6 6 9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </a>
+        <a class="eyn-item" href="#cta">
+          <div class="eyn-icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="5" width="14" height="12" rx="2" stroke="rgba(255,255,255,.7)" stroke-width="1.3"/><path d="M3 9h14M7 3v4M13 3v4" stroke="rgba(255,255,255,.7)" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </div>
+          <div class="eyn-item-title">Command Center</div>
+          <div class="eyn-item-desc">Full deal pipeline, task management, appointment scheduling, and RPA automation logs. Your complete operation in one dashboard.</div>
+          <div class="eyn-arrow" style="color:rgba(255,255,255,.6)">Get early access <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6h7M6 2.5L9.5 6 6 9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     FEATURE: CONTACTS
+══════════════════════════════════════════════ -->
+<section class="feat" id="contacts-feat">
+  <div class="wrap">
+    <div class="feat-grid">
+      <div class="feat-copy reveal">
+        <div class="fc-badge"><span class="badge"><span class="badge-dot"></span>Contacts</span></div>
+        <h2 class="fc-h">Stay one step ahead.<span class="muted">The better way to build your pipeline.</span></h2>
+        <p class="fc-p">See every pre-foreclosure case in South Florida before your competition. Each lead is enriched with owner contact data, property address, and status — directly from Miami-Dade and Broward county records.</p>
+        <ul class="fc-list">
+          <li><span class="fc-check"></span>Lis pendens and NOD filings updated twice weekly via RPA</li>
+          <li><span class="fc-check"></span>Active, HotClose, and Unclassified status tracking</li>
+          <li><span class="fc-check"></span>Case numbers linked to court timelines and deadlines</li>
+          <li><span class="fc-check"></span>Sortable, searchable, and filterable dataset in real time</li>
+          <li><span class="fc-check"></span>Click any row to open the full case detail and history</li>
+        </ul>
+      </div>
+      <div class="feat-vis reveal d2">
+        <div class="feat-vis-frame">
+          <div class="fvf-bar">
+            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+            <span class="fvf-label">Contacts › All Contacts › Miami</span>
+          </div>
+          <div style="padding:10px 14px;border-bottom:1px solid var(--w06);display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.1)">
+            <span style="font-size:14.5px;font-weight:700">My Contacts</span>
+            <div style="display:flex;gap:7px">
+              <span style="font-size:11px;background:var(--w06);border:1px solid var(--w10);border-radius:4px;padding:4px 10px;color:var(--w50)">Filters</span>
+              <span style="font-size:11px;font-weight:600;background:#fff;color:#111;border-radius:4px;padding:4px 10px;cursor:pointer">+ Add Contact</span>
+            </div>
+          </div>
+          <table class="fv-table">
+            <thead><tr><th>Case #</th><th>Status</th><th>Address</th><th>City</th><th>Owner</th></tr></thead>
+            <tbody>
+              <tr><td class="mf">2025-041287-CA-01</td><td><span class="tag-a">Active</span></td><td>8821 NW 14 AVE</td><td>MIAMI</td><td>JAMES R. CALDWELL</td></tr>
+              <tr><td class="mf">2024-098341-CA-01</td><td><span class="tag-h">HotClose</span></td><td>1144 SW 67 CT</td><td>MIAMI</td><td>PATRICIA NGUYEN</td></tr>
+              <tr><td class="mf">2025-033109-CA-01</td><td><span class="tag-h">HotClose</span></td><td>3305 NW 183 ST</td><td>Miami Gardens</td><td>CARLOS E. RUIZ</td></tr>
+              <tr><td class="mf">2023-071452-CA-01</td><td><span class="tag-a">Active</span></td><td>722 NE 128 ST</td><td>North Miami</td><td>DENISE WALKER</td></tr>
+              <tr><td class="mf">2025-019876-FC-04</td><td><span class="tag-a">Active</span></td><td>5507 SW 98 AVE</td><td>MIAMI</td><td>ROBERT T. MASON</td></tr>
+              <tr><td class="mf">2024-055602-CA-01</td><td><span class="tag-h">HotClose</span></td><td>14220 NE 6 AVE</td><td>North Miami</td><td>LINDA OKONKWO</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     FEATURE: WORKSPACE
+══════════════════════════════════════════════ -->
+<section class="feat" id="workspace-feat" style="background:rgba(255,255,255,.012)">
+  <div class="wrap">
+    <div class="feat-grid flip">
+      <div class="feat-vis reveal">
+        <div class="feat-vis-frame">
+          <div class="fvf-bar">
+            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+            <span class="fvf-label" id="ws-bar-label">Workspace › Inbox · Texts</span>
+          </div>
+          <div class="fv-ws">
+            <div class="fvws-left">
+              <div class="fvws-tabs" id="ws-tabs">
+                <div class="fvws-tab" data-tab="calls">Calls</div>
+                <div class="fvws-tab on" data-tab="texts">Texts</div>
+                <div class="fvws-tab" data-tab="emails">Emails</div>
+              </div>
+              <div style="padding:8px 12px">
+                <input id="ws-search" style="width:100%;background:var(--w06);border:1px solid var(--w06);border-radius:4px;padding:6px 10px;font-size:11.5px;color:rgba(255,255,255,.4);outline:none;font-family:var(--ff)" placeholder="Search..."/>
+              </div>
+
+              <!-- CALLS list -->
+              <div id="ws-list-calls" style="display:none">
+                <div class="fvws-conv on" data-conv="call1">
+                  <div class="fvws-conv-n">Robert M. — 2025-019876</div>
+                  <div class="fvws-conv-m">Missed call · left voicemail</div>
+                  <div class="fvws-conv-t">Today, 9:05 AM · 2m 14s</div>
+                </div>
+                <div class="fvws-conv" data-conv="call2">
+                  <div class="fvws-conv-n">Denise W. — 2023-071452</div>
+                  <div class="fvws-conv-m">Answered · discussed options</div>
+                  <div class="fvws-conv-t">Yesterday, 4:30 PM · 8m 42s</div>
+                </div>
+                <div class="fvws-conv" data-conv="call3">
+                  <div class="fvws-conv-n">Linda O. — 2024-055602</div>
+                  <div class="fvws-conv-m">Callback scheduled for Thursday</div>
+                  <div class="fvws-conv-t">2 days ago · 5m 18s</div>
+                </div>
+              </div>
+
+              <!-- TEXTS list -->
+              <div id="ws-list-texts">
+                <div class="fvws-conv on" data-conv="text1">
+                  <div class="fvws-conv-n">Patricia N. — 2024-098341</div>
+                  <div class="fvws-conv-m">Yes, I'd be open to talking.</div>
+                  <div class="fvws-conv-t">Today, 11:42 AM</div>
+                </div>
+                <div class="fvws-conv" data-conv="text2">
+                  <div class="fvws-conv-n">Carlos R. — 2025-033109</div>
+                  <div class="fvws-conv-m">Can we meet Thursday?</div>
+                  <div class="fvws-conv-t">Yesterday, 3:15 PM</div>
+                </div>
+                <div class="fvws-conv" data-conv="text3">
+                  <div class="fvws-conv-n">James C. — 2025-041287</div>
+                  <div class="fvws-conv-m">Not interested right now.</div>
+                  <div class="fvws-conv-t">2 days ago</div>
+                </div>
+              </div>
+
+              <!-- EMAILS list -->
+              <div id="ws-list-emails" style="display:none">
+                <div class="fvws-conv on" data-conv="email1">
+                  <div class="fvws-conv-n">Robert M. — 2025-019876</div>
+                  <div class="fvws-conv-m">Re: Your property on SW 98 AVE</div>
+                  <div class="fvws-conv-t">Today, 8:22 AM</div>
+                </div>
+                <div class="fvws-conv" data-conv="email2">
+                  <div class="fvws-conv-n">Denise W. — 2023-071452</div>
+                  <div class="fvws-conv-m">Thank you for reaching out</div>
+                  <div class="fvws-conv-t">Yesterday, 10:44 AM</div>
+                </div>
+                <div class="fvws-conv" data-conv="email3">
+                  <div class="fvws-conv-n">Carlos R. — 2025-033109</div>
+                  <div class="fvws-conv-m">Wanted to ask about the process</div>
+                  <div class="fvws-conv-t">2 days ago</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- RIGHT PANEL — content per tab/conv -->
+            <div class="fvws-right" id="ws-panel">
+              <!-- Default: texts/text1 -->
+              <div id="ws-content-texts-text1">
+                <div class="fvws-bubble">Hi Patricia, my name is Alex. I noticed your property on SW 67 CT may be going through a difficult situation. We work with homeowners to find the best path forward — no pressure. Would you be open to a quick chat?<div class="fvws-time">Today, 10:14 AM</div></div>
+                <div class="fvws-bubble out">Yes, I'd be open to talking. When works for you?<div class="fvws-time">Today, 11:42 AM ✓✓</div></div>
+                <div class="fvws-bubble">How does Thursday at 2pm sound? I can come to you or do a call — whatever's easier.<div class="fvws-time">Today, 11:50 AM</div></div>
+              </div>
+              <div id="ws-content-texts-text2" style="display:none">
+                <div class="fvws-bubble">Hi Carlos, reaching out about the property on NW 183 ST. We help homeowners in pre-foreclosure find options before it's too late. Worth a quick conversation?<div class="fvws-time">Yesterday, 2:10 PM</div></div>
+                <div class="fvws-bubble out">Got your message. Can we meet Thursday?<div class="fvws-time">Yesterday, 3:15 PM ✓✓</div></div>
+                <div class="fvws-bubble">Absolutely! Thursday works great. Morning or afternoon? I'll come to you.<div class="fvws-time">Yesterday, 3:28 PM</div></div>
+              </div>
+              <div id="ws-content-texts-text3" style="display:none">
+                <div class="fvws-bubble">Hi James, I came across your property on NW 14 Ave and wanted to reach out. We work with homeowners navigating pre-foreclosure — happy to share some options if helpful.<div class="fvws-time">2 days ago, 1:30 PM</div></div>
+                <div class="fvws-bubble out">Not interested right now, thanks.<div class="fvws-time">2 days ago, 2:05 PM ✓✓</div></div>
+                <div class="fvws-bubble">No problem at all, James. I'll check back in a few weeks — things can change quickly in these situations. Take care.<div class="fvws-time">2 days ago, 2:12 PM</div></div>
+              </div>
+              <!-- CALLS content -->
+              <div id="ws-content-calls-call1" style="display:none">
+                <div style="padding:10px 0 6px">
+                  <div style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--w30);margin-bottom:8px">Outbound Call Log</div>
+                  <div style="background:var(--w06);border:1px solid var(--w06);border-radius:8px;padding:12px 14px;margin-bottom:8px">
+                    <div style="font-weight:600;font-size:13px;margin-bottom:3px">Robert M. — 2025-019876</div>
+                    <div style="font-size:12px;color:var(--w50);margin-bottom:6px">5507 SW 98 AVE · MIAMI, FL 33165</div>
+                    <div style="display:flex;gap:12px;font-family:var(--mono);font-size:10px;color:var(--w30)">
+                      <span>📞 Missed · Voicemail left</span><span>⏱ 2m 14s</span><span>Today 9:05 AM</span>
+                    </div>
+                  </div>
+                  <div style="background:var(--w06);border:1px solid rgba(249,115,22,.2);border-radius:8px;padding:12px 14px">
+                    <div style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(249,115,22,.7);margin-bottom:5px">Voicemail Transcript</div>
+                    <div style="font-size:12px;color:var(--w70);line-height:1.6;font-style:italic">"Hi Robert, this is Alex calling about your property on SW 98 Ave. I'd love to connect — we help homeowners find solutions in difficult situations. Please call back at your convenience. No obligation."</div>
+                  </div>
+                </div>
+              </div>
+              <div id="ws-content-calls-call2" style="display:none">
+                <div style="padding:10px 0 6px">
+                  <div style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--w30);margin-bottom:8px">Answered Call Log</div>
+                  <div style="background:var(--w06);border:1px solid rgba(34,197,94,.2);border-radius:8px;padding:12px 14px;margin-bottom:8px">
+                    <div style="font-weight:600;font-size:13px;margin-bottom:3px">Denise W. — 2023-071452</div>
+                    <div style="font-size:12px;color:var(--w50);margin-bottom:6px">722 NE 128 ST · North Miami, FL 33161</div>
+                    <div style="display:flex;gap:12px;font-family:var(--mono);font-size:10px;color:var(--w30)">
+                      <span>✅ Answered</span><span>⏱ 8m 42s</span><span>Yesterday 4:30 PM</span>
+                    </div>
+                  </div>
+                  <div style="background:var(--w06);border:1px solid var(--w06);border-radius:8px;padding:12px 14px">
+                    <div style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--w30);margin-bottom:5px">Call Notes</div>
+                    <div style="font-size:12px;color:var(--w70);line-height:1.6">Denise is open to a cash offer. Wants to stay until March. Has spoken to her attorney already — no litigation yet. Follow up next Tuesday with ARV sheet.</div>
+                  </div>
+                </div>
+              </div>
+              <div id="ws-content-calls-call3" style="display:none">
+                <div style="padding:10px 0 6px">
+                  <div style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--w30);margin-bottom:8px">Scheduled Callback</div>
+                  <div style="background:var(--w06);border:1px solid rgba(14,165,233,.2);border-radius:8px;padding:12px 14px;margin-bottom:8px">
+                    <div style="font-weight:600;font-size:13px;margin-bottom:3px">Linda O. — 2024-055602</div>
+                    <div style="font-size:12px;color:var(--w50);margin-bottom:6px">14220 NE 6 AVE · North Miami, FL 33161</div>
+                    <div style="display:flex;gap:12px;font-family:var(--mono);font-size:10px;color:var(--w30)">
+                      <span>📅 Callback Thu 10:00 AM</span><span>⏱ 5m 18s</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- EMAILS content -->
+              <div id="ws-content-emails-email1" style="display:none">
+                <div style="background:var(--w06);border:1px solid var(--w10);border-radius:8px;overflow:hidden">
+                  <div style="padding:10px 14px;border-bottom:1px solid var(--w06);background:rgba(0,0,0,.2)">
+                    <div style="font-size:12.5px;font-weight:600;margin-bottom:2px">Re: Your property on SW 98 AVE</div>
+                    <div style="font-family:var(--mono);font-size:9.5px;color:var(--w30)">From: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="fd8f929f988f89d390bd98909c9491d39e9290">[email&#160;protected]</a> · Today, 8:22 AM</div>
+                  </div>
+                  <div style="padding:14px;font-size:12.5px;color:var(--w70);line-height:1.7">
+                    Hi Alex,<br><br>
+                    Thank you for reaching out. I did receive your voicemail earlier. My situation has gotten complicated and I'm not sure what options I have at this point.<br><br>
+                    Would be open to learning more about what you do. Can we schedule a call this week?<br><br>
+                    — Robert
+                  </div>
+                </div>
+              </div>
+              <div id="ws-content-emails-email2" style="display:none">
+                <div style="background:var(--w06);border:1px solid var(--w10);border-radius:8px;overflow:hidden">
+                  <div style="padding:10px 14px;border-bottom:1px solid var(--w06);background:rgba(0,0,0,.2)">
+                    <div style="font-size:12.5px;font-weight:600;margin-bottom:2px">Thank you for reaching out</div>
+                    <div style="font-family:var(--mono);font-size:9.5px;color:var(--w30)">From: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="771312191e04125900161b1c120537121a161e1b5914181a">[email&#160;protected]</a> · Yesterday, 10:44 AM</div>
+                  </div>
+                  <div style="padding:14px;font-size:12.5px;color:var(--w70);line-height:1.7">
+                    Hello,<br><br>
+                    I appreciate you getting in touch. I wasn't sure anyone could help at this stage but I'd like to understand my options better.<br><br>
+                    I spoke with my attorney last week and she mentioned there may still be time. Could we meet in person?<br><br>
+                    — Denise
+                  </div>
+                </div>
+              </div>
+              <div id="ws-content-emails-email3" style="display:none">
+                <div style="background:var(--w06);border:1px solid var(--w10);border-radius:8px;overflow:hidden">
+                  <div style="padding:10px 14px;border-bottom:1px solid var(--w06);background:rgba(0,0,0,.2)">
+                    <div style="font-size:12.5px;font-weight:600;margin-bottom:2px">Question about the process</div>
+                    <div style="font-family:var(--mono);font-size:9.5px;color:var(--w30)">From: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="adceccdfc1c2de83dfd8c4d7edc8c0ccc4c183cec2c0">[email&#160;protected]</a> · 2 days ago, 7:50 PM</div>
+                  </div>
+                  <div style="padding:14px;font-size:12.5px;color:var(--w70);line-height:1.7">
+                    Hi,<br><br>
+                    I got your text. I wanted to ask — how does this process usually work? Do you buy the house directly or is it something else?<br><br>
+                    I have about 60 days before the auction. Would appreciate a call.<br><br>
+                    — Carlos
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="feat-copy reveal d2">
+        <div class="fc-badge"><span class="badge"><span class="badge-dot"></span>Workspace</span></div>
+        <h2 class="fc-h">One unified inbox.<span class="muted">Stay top of mind, without falling behind.</span></h2>
+        <p class="fc-p">Every homeowner conversation — calls, texts, and emails — organized by case in a single workspace. Never lose track of where a conversation left off.</p>
+        <ul class="fc-list">
+          <li><span class="fc-check"></span>Calls, Texts, and Emails in one tabbed inbox</li>
+          <li><span class="fc-check"></span>Full thread history — linked to case numbers automatically</li>
+          <li><span class="fc-check"></span>AI-assisted SMS drafting for timely follow-ups</li>
+          <li><span class="fc-check"></span>Real-time response visibility — know who replied and when</li>
+          <li><span class="fc-check"></span>Never miss a follow-up with automated reminders</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     FEATURE: DASHBOARD
+══════════════════════════════════════════════ -->
+<section class="feat" id="dashboard-feat">
+  <div class="wrap">
+    <div class="feat-grid">
+      <div class="feat-copy reveal">
+        <div class="fc-badge"><span class="badge"><span class="badge-dot"></span>Dashboard</span></div>
+        <h2 class="fc-h">Your daily command center.<span class="muted">Never miss a follow-up again.</span></h2>
+        <p class="fc-p">The dashboard surfaces what matters today — tasks due, new messages, upcoming appointments, and the latest RPA automation run — the moment you log in.</p>
+        <ul class="fc-list">
+          <li><span class="fc-check"></span>Tasks with case numbers, due dates, and notes</li>
+          <li><span class="fc-check"></span>Appointments for callbacks and property walkthroughs</li>
+          <li><span class="fc-check"></span>Inbox summary showing unread emails and texts</li>
+          <li><span class="fc-check"></span>Automation RPA logs with Miami &amp; Broward lead counts</li>
+          <li><span class="fc-check"></span>Full audit trail on every scrape and sync event</li>
+        </ul>
+      </div>
+      <div class="feat-vis reveal d2">
+        <div class="feat-vis-frame">
+          <div class="fvf-bar">
+            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+            <span class="fvf-label">VonkamData — Dashboard</span>
+          </div>
+          <div class="fv-dash">
+            <div class="fvd-header">Welcome back, Alex Rivera</div>
+            <div class="fvd-stats">
+              <div class="fvd-stat"><div class="fvd-stat-l">Active Leads</div><div class="fvd-stat-v"><em>287</em></div><div class="fvd-stat-d" style="color:#4ade80">↑ 19 this week</div></div>
+              <div class="fvd-stat"><div class="fvd-stat-l">Tasks Due</div><div class="fvd-stat-v">4</div><div class="fvd-stat-d" style="color:#fb923c">3 urgent today</div></div>
+              <div class="fvd-stat"><div class="fvd-stat-l">Last RPA Run</div><div class="fvd-stat-v" style="font-size:16px">Today</div><div class="fvd-stat-d" style="color:var(--w30)">8:00 AM EST</div></div>
+            </div>
+            <div class="fvd-task">
+              <div class="fvd-task-h">📞 Call · Patricia N. — Follow up on Thursday meeting</div>
+              <div class="fvd-task-m"><span>Today, 2:00 PM EST</span><span>Miami, FL 33144</span></div>
+            </div>
+            <div class="fvd-task">
+              <div class="fvd-task-h">🏠 Walkthrough · Carlos R. — 3305 NW 183 ST</div>
+              <div class="fvd-task-m"><span>Thursday, 10:00 AM EST</span><span>Miami Gardens, FL</span></div>
+            </div>
+            <div style="margin-top:10px;padding:10px 13px;background:var(--w06);border:1px solid rgba(255,255,255,.04);border-radius:6px">
+              <div style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--w30);margin-bottom:4px">RPA Automation Log</div>
+              <div style="font-family:var(--mono);font-size:10.5px;color:rgba(255,255,255,.8)">Today · 8:00 AM EST &nbsp;·&nbsp; Miami: 287 &nbsp;·&nbsp; Broward: 44</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     HOW IT WORKS
+══════════════════════════════════════════════ -->
+<section class="hiw" id="how-it-works">
+  <div class="wrap">
+    <div class="hiw-header reveal">
+      <div class="section-badge"><span class="badge"><span class="badge-dot"></span>Process</span></div>
+      <h2 class="section-h">From county record<br><span class="dim">to closed deal.</span></h2>
+      <p style="font-size:16px;color:var(--w50);margin-top:12px;font-weight:300;max-width:480px;margin-left:auto;margin-right:auto">Four steps between a lis pendens filing and a check in your hand.</p>
+    </div>
+    <div class="hiw-steps reveal d1">
+      <div class="hiw-step">
+        <div class="step-n">Step 01</div>
+        <div class="step-title">Lead Discovery</div>
+        <div class="step-body">RPA automation scrapes lis pendens filings from county records twice weekly. New cases appear in your dashboard within hours of being filed.</div>
+      </div>
+      <div class="hiw-step">
+        <div class="step-n">Step 02</div>
+        <div class="step-title">Case Creation</div>
+        <div class="step-body">Each lead becomes a fully tracked case with owner data, property address, court timeline, and status classification — all pre-populated automatically.</div>
+      </div>
+      <div class="hiw-step">
+        <div class="step-n">Step 03</div>
+        <div class="step-title">Homeowner Outreach</div>
+        <div class="step-body">Send SMS, calls, or emails from the Workspace inbox. AI drafts context-aware follow-ups. Every message is linked to the case for full history.</div>
+      </div>
+      <div class="hiw-step">
+        <div class="step-n">Step 04</div>
+        <div class="step-title">Deal Execution</div>
+        <div class="step-body">Use ARV analysis and deal notes to structure your offer. Full case documentation accessible at every stage — from first contact to closing.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SOCIAL PROOF
+══════════════════════════════════════════════ -->
+<section class="proof">
+  <div class="wrap">
+    <div class="proof-header reveal">
+      <div class="section-badge"><span class="badge"><span class="badge-dot"></span>Investor Feedback</span></div>
+      <h2 class="section-h">Built by practitioners.<br><span class="dim">Used by practitioners.</span></h2>
+    </div>
+    <div class="proof-grid">
+      <div class="proof-card reveal">
+        <div class="proof-stars">★★★★★</div>
+        <div class="proof-text">"I was managing pre-foreclosure cases across four spreadsheets before VonkamData. Sierra consolidated everything. I closed two deals in my first 30 days on the platform."</div>
+        <div class="proof-rule"></div>
+        <div class="proof-author">
+          <div class="proof-av">RJ</div>
+          <div><div class="proof-name">R. Johnson</div><div class="proof-role">RE Investor · Hialeah, FL</div></div>
+        </div>
+      </div>
+      <div class="proof-card reveal d1">
+        <div class="proof-stars">★★★★★</div>
+        <div class="proof-text">"The automated scraper surfaces cases three to four days before anyone else in my network sees them. In this market, that window is the difference between a deal and a miss."</div>
+        <div class="proof-rule"></div>
+        <div class="proof-author">
+          <div class="proof-av">DM</div>
+          <div><div class="proof-name">D. Morales</div><div class="proof-role">Wholesaler · Coral Gables, FL</div></div>
+        </div>
+      </div>
+      <div class="proof-card reveal d2">
+        <div class="proof-stars">★★★★★</div>
+        <div class="proof-text">"The Workspace inbox is a game changer — I manage all homeowner texts and calls linked to each case. No more lost follow-ups. The task dashboard keeps me focused every single morning."</div>
+        <div class="proof-rule"></div>
+        <div class="proof-author">
+          <div class="proof-av">AC</div>
+          <div><div class="proof-name">A. Castro</div><div class="proof-role">Investor · Fort Lauderdale, FL</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     PRICING
+══════════════════════════════════════════════ -->
+<section class="pricing" id="pricing">
+  <div class="pricing-glow"></div>
+  <div class="wrap">
+    <div class="pricing-header reveal">
+      <div class="section-badge" style="justify-content:center;display:flex;margin-bottom:18px"><span class="badge"><span class="badge-dot"></span>Pricing</span></div>
+      <h2 class="section-h">Straightforward pricing.<br><span class="dim">No surprises, cancel anytime.</span></h2>
+      <p style="font-size:16px;color:var(--w50);margin-top:12px;font-weight:300">Join South Florida investors who use VonkamData to get ahead of every distressed deal.</p>
+      <!-- billing toggle -->
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:26px">
+        <div class="billing-toggle">
+          <div class="bt-opt" id="bt-annual" onclick="setBilling('annual')">Annual <span class="bt-save">2 months free</span></div>
+          <div class="bt-opt on" id="bt-monthly" onclick="setBilling('monthly')">Monthly</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pricing-grid reveal d1">
+
+      <!-- Starter -->
+      <div class="plan">
+        <div class="plan-top-accent"></div>
+        <div class="plan-name">Scout</div>
+        <div class="plan-price">
+          <span class="plan-price-num" id="price-scout">$99</span>
+          <span class="plan-price-mo">/month</span>
+        </div>
+        <div class="plan-desc">For new investors building their South Florida pre-foreclosure pipeline for the first time.</div>
+        <div class="plan-divider"></div>
+        <ul class="plan-list">
+          <li><span class="plan-li-check"></span>Access to Miami-Dade lead dataset</li>
+          <li><span class="plan-li-check"></span>Up to 100 active cases tracked</li>
+          <li><span class="plan-li-check"></span>Workspace inbox — Calls, Texts, Emails</li>
+          <li><span class="plan-li-check"></span>Task creation and tracking</li>
+          <li><span class="plan-li-check"></span>Basic deal notes and ARV calculator</li>
+          <li><span class="plan-li-check"></span>Direct calendar integration</li>
+        </ul>
+        <button class="plan-btn ghost" onclick="window.location='#cta'">Get started</button>
+        <p class="plan-note">Free during beta</p>
+      </div>
+
+      <!-- Growth — featured -->
+      <div class="plan featured">
+        <div class="plan-top-accent"></div>
+        <div class="plan-pop">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1l1.12 2.27L9 3.64 7 5.59l.47 2.75L5 7.07 2.53 8.34 3 5.59 1 3.64l2.88-.37L5 1z" fill="#ffffff"/></svg>
+          Most popular
+        </div>
+        <div class="plan-name">Operator</div>
+        <div class="plan-price">
+          <span class="plan-price-num" id="price-operator">$249</span>
+          <span class="plan-price-mo">/month</span>
+        </div>
+        <div class="plan-desc">For active investors and wholesalers running multiple deals across Miami-Dade and Broward simultaneously.</div>
+        <div class="plan-divider"></div>
+        <p style="font-size:12.5px;color:var(--w50);margin-bottom:14px;font-family:var(--mono);letter-spacing:.04em">Everything in Scout, plus:</p>
+        <ul class="plan-list">
+          <li><span class="plan-li-check gold"></span>Miami-Dade + Broward datasets</li>
+          <li><span class="plan-li-check gold"></span>Unlimited case tracking</li>
+          <li><span class="plan-li-check gold"></span>Automated SMS outreach sequences</li>
+          <li><span class="plan-li-check gold"></span>AI-assisted message drafting</li>
+          <li><span class="plan-li-check gold"></span>Full pipeline deal management</li>
+          <li><span class="plan-li-check gold"></span>RPA automation logs and audit trail</li>
+          <li><span class="plan-li-check gold"></span>Advanced ARV + deal calculator</li>
+        </ul>
+        <button class="plan-btn primary" onclick="window.location='#cta'">Get started</button>
+        <p class="plan-note">Free during beta</p>
+      </div>
+
+      <!-- Scale -->
+      <div class="plan">
+        <div class="plan-top-accent"></div>
+        <div class="plan-name">Closer</div>
+        <div class="plan-price">
+          <span class="plan-price-num" id="price-closer">$599</span>
+          <span class="plan-price-mo">/month</span>
+        </div>
+        <div class="plan-desc">For high-volume operators scaling their distressed property operation across multiple Florida counties.</div>
+        <div class="plan-divider"></div>
+        <p style="font-size:12.5px;color:var(--w50);margin-bottom:14px;font-family:var(--mono);letter-spacing:.04em">Everything in Operator, plus:</p>
+        <ul class="plan-list">
+          <li><span class="plan-li-check"></span>Priority access to Pinellas County expansion</li>
+          <li><span class="plan-li-check"></span>Dedicated onboarding &amp; account manager</li>
+          <li><span class="plan-li-check"></span>Real-time data refresh (vs. 2×/week)</li>
+          <li><span class="plan-li-check"></span>Custom outreach templates &amp; sequences</li>
+          <li><span class="plan-li-check"></span>Team seats — up to 3 users</li>
+          <li><span class="plan-li-check"></span>API access for custom integrations</li>
+        </ul>
+        <button class="plan-btn ghost" onclick="window.location='#cta'">Get started</button>
+        <p class="plan-note">Free during beta</p>
+      </div>
+
+    </div>
+
+    <!-- Premium Beta Strip -->
+    <div class="beta-strip reveal">
+      <div class="beta-inner">
+        <div class="beta-left">
+          <div class="beta-tag"><span class="beta-tag-dot"></span>Early Access</div>
+          <div class="beta-heading">All plans.<br><span>Free right now.</span></div>
+        </div>
+        <div class="beta-right">
+          <div class="beta-desc">
+            Every plan is <strong>completely free during beta</strong>. Founding members lock in their pricing tier permanently when billing goes live — the earlier you join, the better the rate you keep.
+          </div>
+          <a href="#cta" class="beta-cta">Claim founding access →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     CTA + FORM
+══════════════════════════════════════════════ -->
+<section class="cta-section" id="cta">
+  <div class="cta-glow"></div>
+  <div class="wrap">
+    <div class="cta-grid">
+      <div class="cta-copy">
+        <div style="margin-bottom:26px"><span class="badge"><span class="badge-dot"></span>Early Access Open</span></div>
+        <h2 class="section-h reveal" style="text-align:left">Gain an edge in South Florida's distressed market.</h2>
+        <p class="reveal d1">VonkamData is in private beta — available to a limited number of Florida-based real estate investors. Beta participants receive complimentary full access, direct onboarding, and priority consideration when new counties are added.</p>
+        <ul class="cta-list reveal d2">
+          <li><div class="cta-check-wrap"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 2.5" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>312 active Miami-Dade cases tracked as of today</li>
+          <li><div class="cta-check-wrap"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 2.5" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Automated RPA scrape every Monday &amp; Thursday</li>
+          <li><div class="cta-check-wrap"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 2.5" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Full pipeline, inbox &amp; deal analysis included</li>
+          <li><div class="cta-check-wrap"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 2.5" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>No subscription required during beta period</li>
+          <li><div class="cta-check-wrap"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 2.5" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Direct onboarding call with the Vonkam team</li>
+          <li><div class="cta-check-wrap"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 2.5" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Priority access to Broward &amp; Pinellas expansion</li>
+        </ul>
+      </div>
+
+      <div class="reveal d2">
+        <div class="form-wrap" id="form-wrap">
+          <div class="form-title">Access Request Form</div>
+          <div class="f-row2">
+            <div class="fg"><label class="fl-lbl">First Name</label><input class="f-in" id="f-fn" type="text" placeholder="e.g. Michel"/></div>
+            <div class="fg"><label class="fl-lbl">Last Name</label><input class="f-in" id="f-ln" type="text" placeholder="e.g. Kam"/></div>
+          </div>
+          <div class="fg"><label class="fl-lbl">Email Address</label><input class="f-in" id="f-em" type="email" placeholder="name@domain.com"/></div>
+          <div class="fg"><label class="fl-lbl">Phone Number</label><input class="f-in" id="f-ph" type="tel" placeholder="(305) 000-0000"/></div>
+          <div class="fg">
+            <label class="fl-lbl">County of Interest</label>
+            <select class="f-in" id="f-co" style="cursor:pointer">
+              <option value="" disabled selected>Select county...</option>
+              <option>Miami-Dade</option><option>Broward</option>
+              <option>Both</option><option>Other (Florida)</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl-lbl">Plan Interest</label>
+            <select class="f-in" id="f-plan" style="cursor:pointer">
+              <option value="" disabled selected>Select plan...</option>
+              <option>Scout — $99/mo</option><option>Operator — $249/mo</option>
+              <option>Closer — $599/mo</option><option>Not sure yet</option>
+            </select>
+          </div>
+          <button id="f-sub-btn" class="f-sub" onclick="doSubmit()">Submit Access Request →</button>
+          <p class="f-note">FL-based investors only · Your info is never shared with third parties</p>
+        </div>
+        <div class="form-success" id="form-ok">
+          <div class="fs-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M4.5 11L9 15.5L17.5 6.5" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="fs-t">Access Request Received</div>
+          <div class="fs-s">We'll reach out within 24 hours<br>with your onboarding details.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════════ -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand-name">Vonkam<span>Data</span></div>
+      <div class="footer-tagline">Pre-Foreclosure Intelligence · South Florida</div>
+      <div style="margin-top:14px;font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.2)">© 2026 Vonkam Technologies LLC · Miami, FL</div>
+    </div>
+    <div class="footer-links-col">
+      <h4>Platform</h4>
+      <a href="#contacts-feat">Contacts</a>
+      <a href="#workspace-feat">Workspace</a>
+      <a href="#dashboard-feat">Dashboard</a>
+      <a href="#how-it-works">How It Works</a>
+    </div>
+    <div class="footer-links-col">
+      <h4>Company</h4>
+      <a href="#pricing">Pricing</a>
+      <a href="#cta">Early Access</a>
+      <a href="/cdn-cgi/l/email-protection#1078757c7c7f50667f7e7b717d3e7f7e7c797e75">Contact</a>
+      <a href="https://vonkam.technology" target="_blank">vonkam.technology</a>
+    </div>
+    <div class="footer-links-col">
+      <h4>Legal</h4>
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Use</a>
+    </div>
+  </div>
+</footer>
+
+<!-- TOAST -->
+<div id="toast">
+  <div class="toast-dot"></div>
+  <div>
+    <div class="toast-t">Access Request Submitted</div>
+    <div class="toast-s">We'll be in touch within 24 hours.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SCRIPTS
+══════════════════════════════════════════════ -->
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+/* ════════════════════════════════════════════
+   SUPABASE CONFIG
+════════════════════════════════════════════ */
+const SUPABASE_URL = 'https://tznxiotpvakpxkuihpwe.supabase.co'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6bnhpb3RwdmFrcHhrdWlocHdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4OTc0MDUsImV4cCI6MjA4NzQ3MzQwNX0.e7ZX-G8zoFzGAbiD2AHp8i_EiYCvUmkON2jLINxxzw0'
+const TABLE = 'sign_ups_vonkamtechnology'
+
+async function saveToSupabase(payload) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${TABLE}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'Prefer': 'return=minimal',
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  })
+  if (!res.ok) {
+    const errText = await res.text()
+    console.error('Supabase error response:', res.status, errText)
+    throw new Error(`${res.status}: ${errText}`)
+  }
+  return true
+}
+
+/* ════════════════════════════════════════════
+   CUSTOM CURSOR — smooth lag ring
+════════════════════════════════════════════ */
+const cur = document.getElementById('cursor')
+const ring = document.getElementById('cursor-ring')
+let mx=0,my=0,rx=0,ry=0,isHovering=false
+document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; cur.style.left=mx+'px'; cur.style.top=my+'px' })
+;(function animRing(){
+  rx+=(mx-rx)*.1; ry+=(my-ry)*.1
+  ring.style.left=rx+'px'; ring.style.top=ry+'px'
+  requestAnimationFrame(animRing)
+})()
+// Expand cursor on interactive elements
+document.querySelectorAll('a,button,.plan-btn,.eyn-item,.proof-card,.hiw-step,.feat-vis').forEach(el => {
+  el.addEventListener('mouseenter', () => { ring.style.width='56px'; ring.style.height='56px'; ring.style.borderColor='rgba(255,255,255,.7)'; ring.style.mixBlendMode='normal'; ring.style.background='rgba(255,255,255,.04)' })
+  el.addEventListener('mouseleave', () => { ring.style.width='38px'; ring.style.height='38px'; ring.style.borderColor='rgba(255,255,255,.45)'; ring.style.mixBlendMode=''; ring.style.background='transparent' })
+})
+
+/* ════════════════════════════════════════════
+   NAV + SCROLL PROGRESS
+════════════════════════════════════════════ */
+const navEl = document.getElementById('nav')
+const progressBar = document.getElementById('scroll-progress')
+const NAV_HEIGHT = 66
+
+window.addEventListener('scroll', () => {
+  const scrollY = window.scrollY
+  const total = document.documentElement.scrollHeight - window.innerHeight
+  progressBar.style.width = (total > 0 ? (scrollY/total)*100 : 0) + '%'
+  navEl.classList.toggle('scrolled', scrollY > 60)
+  // Parallax hero grid
+  const grid = document.querySelector('.hero-grid-lines')
+  if (grid) grid.style.transform = `translateY(${scrollY * .1}px)`
+}, { passive: true })
+
+/* ════════════════════════════════════════════
+   SMOOTH SCROLL — all anchor links
+════════════════════════════════════════════ */
+function smoothScrollTo(id) {
+  const el = document.getElementById(id)
+  if (!el) return
+  window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - NAV_HEIGHT - 8, behavior: 'smooth' })
+}
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[href]')
+  if (!a) return
+  const href = a.getAttribute('href')
+  if (!href?.startsWith('#') || href === '#') return
+  const id = href.slice(1)
+  if (!document.getElementById(id)) return
+  e.preventDefault()
+  const mob = document.getElementById('mobMenu')
+  if (mob.classList.contains('open')) { mob.classList.remove('open'); mob.style.display='none' }
+  smoothScrollTo(id)
+})
+document.querySelectorAll('.plan-btn,.beta-cta').forEach(btn => {
+  btn.addEventListener('click', e => { e.preventDefault(); smoothScrollTo('cta') })
+})
+
+/* ════════════════════════════════════════════
+   MOBILE MENU
+════════════════════════════════════════════ */
+function toggleMob() {
+  const m = document.getElementById('mobMenu')
+  const open = m.classList.toggle('open')
+  m.style.display = open ? 'flex' : 'none'
+}
+document.getElementById('mobMenu').style.display = 'none'
+
+/* ════════════════════════════════════════════
+   SCROLL REVEAL — staggered
+════════════════════════════════════════════ */
+const revObs = new IntersectionObserver(es => {
+  es.forEach((e,i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('in'), i * 40)
+    }
+  })
+}, { threshold: .06, rootMargin: '0px 0px -40px 0px' })
+document.querySelectorAll('.reveal').forEach(el => revObs.observe(el))
+
+/* ════════════════════════════════════════════
+   COUNT-UP ANIMATION — triggered on scroll
+════════════════════════════════════════════ */
+function animateCount(el, target, duration=1800, prefix='', suffix='') {
+  const start = performance.now()
+  const isFloat = String(target).includes('.')
+  function update(now) {
+    const p = Math.min((now - start) / duration, 1)
+    const ease = 1 - Math.pow(1-p, 4) // easeOutQuart
+    const val = isFloat ? (target * ease).toFixed(1) : Math.round(target * ease)
+    el.textContent = prefix + val + suffix
+    if (p < 1) requestAnimationFrame(update)
+    else el.textContent = prefix + target + suffix
+  }
+  requestAnimationFrame(update)
+}
+
+const countObs = new IntersectionObserver(es => {
+  es.forEach(e => {
+    if (!e.isIntersecting) return
+    countObs.unobserve(e.target)
+    const raw = e.target.dataset.count
+    const prefix = e.target.dataset.prefix || ''
+    const suffix = e.target.dataset.suffix || ''
+    if (raw) animateCount(e.target, parseFloat(raw), 2000, prefix, suffix)
+  })
+}, { threshold: .5 })
+
+// Hero stats card
+const heroCount = document.querySelector('.hcs-val')
+if (heroCount) {
+  heroCount.dataset.count = '287'
+  heroCount.textContent = '0'
+  countObs.observe(heroCount)
+}
+
+// Ticker values
+document.querySelectorAll('.ticker-val[data-count]').forEach(el => countObs.observe(el))
+
+/* ════════════════════════════════════════════
+   TABLE ROW SCANNER — cycling highlight
+════════════════════════════════════════════ */
+const tableRows = [...document.querySelectorAll('.hc-table tbody tr')]
+let scanIdx = 0
+if (tableRows.length) {
+  setInterval(() => {
+    tableRows.forEach(r => r.style.background = '')
+    tableRows[scanIdx].style.background = 'rgba(255,255,255,.055)'
+    tableRows[scanIdx].style.transition = 'background .3s'
+    setTimeout(() => { if(tableRows[scanIdx]) tableRows[scanIdx].style.background = '' }, 700)
+    scanIdx = (scanIdx + 1) % tableRows.length
+  }, 1600)
+}
+
+/* ════════════════════════════════════════════
+   LIVE CASE COUNTER — increments hero stat
+════════════════════════════════════════════ */
+let liveCount = 287
+setTimeout(() => {
+  const valEl = document.querySelector('.hcs-val')
+  if (!valEl) return
+  const bump = () => {
+    const add = Math.random() < .3 ? 1 : 0
+    if (add) {
+      liveCount++
+      valEl.style.transform = 'scale(1.08)'
+      valEl.style.transition = 'transform .25s'
+      valEl.textContent = liveCount
+      setTimeout(() => valEl.style.transform = '', 300)
+    }
+    setTimeout(bump, 8000 + Math.random() * 12000)
+  }
+  setTimeout(bump, 6000)
+}, 3000)
+
+/* ════════════════════════════════════════════
+   NOTIFICATION POP — appears after delay
+════════════════════════════════════════════ */
+const notifCases = [
+  { case: '2025-051904-CA-01', city: 'Homestead, FL', status: 'HotClose' },
+  { case: '2024-087322-CA-01', city: 'Hialeah Gardens', status: 'Active' },
+  { case: '2025-063811-CA-01', city: 'Opa-locka, FL', status: 'HotClose' },
+  { case: '2026-012445-CA-01', city: 'Miami Gardens', status: 'Active' },
+]
+let notifIdx = 0
+function showNotif() {
+  const existing = document.getElementById('notif-pop-live')
+  if (existing) existing.remove()
+  const data = notifCases[notifIdx % notifCases.length]
+  notifIdx++
+  const pop = document.createElement('div')
+  pop.id = 'notif-pop-live'
+  pop.style.cssText = `
+    position:fixed;bottom:90px;right:24px;z-index:8000;
+    background:#fff;border-radius:12px;padding:14px 18px;
+    box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 1px rgba(0,0,0,.08);
+    min-width:240px;color:#111;
+    transform:translateX(120%);opacity:0;
+    transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .4s;
+  `
+  const statusColor = data.status === 'HotClose' ? '#f97316' : '#22c55e'
+  pop.innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <span style="width:7px;height:7px;border-radius:50%;background:${statusColor};flex-shrink:0;animation:pulse 1.5s ease-in-out infinite"></span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#6b7280">New case filed</span>
+    </div>
+    <div style="font-weight:700;font-size:13px;color:#111;margin-bottom:2px">${data.case}</div>
+    <div style="font-size:11.5px;color:#6b7280">${data.city} · <span style="color:${statusColor};font-weight:500">${data.status}</span></div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#9ca3af;margin-top:5px">just now · via RPA</div>
+  `
+  document.body.appendChild(pop)
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      pop.style.transform = 'translateX(0)'
+      pop.style.opacity = '1'
+    })
+  })
+  setTimeout(() => {
+    pop.style.transform = 'translateX(120%)'
+    pop.style.opacity = '0'
+    setTimeout(() => pop.remove(), 500)
+  }, 4500)
+  setTimeout(showNotif, 9000 + Math.random() * 6000)
+}
+setTimeout(showNotif, 3500)
+
+/* ════════════════════════════════════════════
+   TYPING INDICATOR
+════════════════════════════════════════════ */
+const wsRight = document.querySelector('.fvws-right')
+if (wsRight) {
+  const ind = document.createElement('div')
+  ind.style.cssText = 'display:flex;align-items:center;gap:5px;padding:9px 13px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);border-radius:10px;width:fit-content;margin-top:6px'
+  for (let i=0;i<3;i++) {
+    const d = document.createElement('span')
+    d.style.cssText = `width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.45);display:block;animation:typingBounce 1.4s ease-in-out ${i*.2}s infinite`
+    ind.appendChild(d)
+  }
+  wsRight.appendChild(ind)
+}
+
+/* ════════════════════════════════════════════
+   MAGNETIC BUTTONS — subtle pull effect
+════════════════════════════════════════════ */
+document.querySelectorAll('.hero-btn-primary,.btn-cta,.f-sub,.beta-cta').forEach(btn => {
+  btn.addEventListener('mousemove', e => {
+    const r = btn.getBoundingClientRect()
+    const x = ((e.clientX - r.left) / r.width - .5) * 10
+    const y = ((e.clientY - r.top) / r.height - .5) * 6
+    btn.style.transform = `translate(${x}px,${y}px)`
+  })
+  btn.addEventListener('mouseleave', () => { btn.style.transform = '' })
+})
+
+/* ════════════════════════════════════════════
+   FEATURE CARD 3D TILT
+════════════════════════════════════════════ */
+document.querySelectorAll('.feat-vis').forEach(vis => {
+  const frame = vis.querySelector('.feat-vis-frame')
+  if (!frame) return
+  vis.addEventListener('mousemove', e => {
+    const r = vis.getBoundingClientRect()
+    const x = ((e.clientX - r.left) / r.width - .5) * 8
+    const y = ((e.clientY - r.top) / r.height - .5) * 5
+    frame.style.transform = `rotateY(${x}deg) rotateX(${-y}deg) scale(1.012)`
+    frame.style.boxShadow = `${-x*4}px ${y*2}px 80px rgba(0,0,0,.7),${-x}px 0 40px rgba(0,0,0,.3)`
+  })
+  vis.addEventListener('mouseleave', () => {
+    frame.style.transform = ''
+    frame.style.boxShadow = ''
+  })
+})
+
+/* ════════════════════════════════════════════
+   PRICING TOGGLE
+════════════════════════════════════════════ */
+const prices = {
+  annual:  { scout:'$82', operator:'$207', closer:'$499' },
+  monthly: { scout:'$99', operator:'$249', closer:'$599' }
+}
+function setBilling(mode) {
+  document.getElementById('bt-annual').classList.toggle('on', mode==='annual')
+  document.getElementById('bt-monthly').classList.toggle('on', mode==='monthly')
+  const p = prices[mode]
+  ;['price-scout','price-operator','price-closer'].forEach((id,i) => {
+    const el = document.getElementById(id)
+    const targets = [p.scout,p.operator,p.closer]
+    el.style.transform='scale(.85) translateY(6px)'; el.style.opacity='0'
+    setTimeout(() => { el.textContent=targets[i]; el.style.transform=''; el.style.opacity='' }, 200)
+  })
+}
+;['price-scout','price-operator','price-closer'].forEach(id => {
+  document.getElementById(id).style.transition = 'transform .22s var(--ease-out), opacity .22s'
+})
+
+/* ════════════════════════════════════════════
+   WORKSPACE — full tab + conversation switching
+════════════════════════════════════════════ */
+let currentTab = 'texts'
+let currentConv = 'text1'
+
+function showPanel(tab, conv) {
+  // Hide all content panels
+  document.querySelectorAll('[id^="ws-content-"]').forEach(el => {
+    el.style.opacity = '0'
+    el.style.transform = 'translateY(8px)'
+    setTimeout(() => { el.style.display = 'none' }, 150)
+  })
+  // Show target panel
+  const target = document.getElementById(`ws-content-${tab}-${conv}`)
+  if (target) {
+    setTimeout(() => {
+      target.style.display = 'block'
+      target.style.transition = 'opacity .3s var(--ease-out), transform .3s var(--ease-out)'
+      requestAnimationFrame(() => { target.style.opacity = '1'; target.style.transform = 'none' })
+    }, 160)
+  }
+  // Update search placeholder
+  const searchEl = document.getElementById('ws-search')
+  if (searchEl) searchEl.placeholder = `Search ${tab}...`
+  // Update bar label
+  const barLabel = document.getElementById('ws-bar-label')
+  if (barLabel) barLabel.textContent = `Workspace › Inbox · ${tab.charAt(0).toUpperCase() + tab.slice(1)}`
+}
+
+function switchTab(tab) {
+  currentTab = tab
+  // Update tab active states
+  document.querySelectorAll('.fvws-tab').forEach(t => t.classList.toggle('on', t.dataset.tab === tab))
+  // Show/hide conversation lists
+  ;['calls','texts','emails'].forEach(t => {
+    const list = document.getElementById(`ws-list-${t}`)
+    if (list) list.style.display = t === tab ? 'block' : 'none'
+  })
+  // Activate first conv of new tab
+  const firstConv = document.querySelector(`#ws-list-${tab} .fvws-conv`)
+  if (firstConv) {
+    document.querySelectorAll('.fvws-conv').forEach(c => c.classList.remove('on'))
+    firstConv.classList.add('on')
+    currentConv = firstConv.dataset.conv
+  }
+  showPanel(tab, currentConv)
+}
+
+function switchConv(conv, tab) {
+  currentConv = conv
+  document.querySelectorAll(`#ws-list-${tab} .fvws-conv`).forEach(c => c.classList.toggle('on', c.dataset.conv === conv))
+  showPanel(tab, conv)
+}
+
+// Bind tab clicks
+document.querySelectorAll('.fvws-tab').forEach(tab => {
+  tab.addEventListener('click', function() { switchTab(this.dataset.tab) })
+})
+
+// Bind conversation clicks
+document.querySelectorAll('.fvws-conv[data-conv]').forEach(conv => {
+  conv.addEventListener('click', function() {
+    const convId = this.dataset.conv
+    // Determine which tab this belongs to
+    const parentList = this.closest('[id^="ws-list-"]')
+    const tabName = parentList ? parentList.id.replace('ws-list-','') : currentTab
+    switchConv(convId, tabName)
+  })
+})
+
+/* ════════════════════════════════════════════
+   FORM — Supabase submit
+════════════════════════════════════════════ */
+function setSubmitState(loading) {
+  const btn = document.getElementById('f-sub-btn')
+  btn.disabled = loading
+  btn.textContent = loading ? 'Submitting…' : 'Submit Access Request →'
+  btn.style.opacity = loading ? '.6' : '1'
+  btn.style.cursor = loading ? 'not-allowed' : 'pointer'
+}
+function fieldError(id) {
+  const el = document.getElementById(id)
+  el.style.borderColor = 'rgba(239,68,68,.7)'
+  el.style.animation = 'shake .35s ease'
+  el.focus()
+  setTimeout(() => { el.style.borderColor=''; el.style.animation='' }, 2800)
+}
+async function doSubmit() {
+  const fn  = document.getElementById('f-fn').value.trim()
+  const ln  = document.getElementById('f-ln').value.trim()
+  const em  = document.getElementById('f-em').value.trim()
+  const ph  = document.getElementById('f-ph').value.trim()
+  const co  = document.getElementById('f-co').value
+  const pl  = document.getElementById('f-plan').value
+
+  if (!fn) { fieldError('f-fn'); return }
+  if (!em || !em.includes('@') || !em.includes('.')) { fieldError('f-em'); return }
+
+  setSubmitState(true)
+
+  const payload = {
+    first_name: fn,
+    last_name: ln || null,
+    email: em,
+    phone: ph || null,
+    county: co || null,
+    plan: pl || null,
+    source: 'vonkamdata_landing',
+    submitted_at: new Date().toISOString()
+  }
+
+  console.log('Submitting to Supabase:', payload)
+
+  try {
+    await saveToSupabase(payload)
+    console.log('Supabase insert successful')
+
+    // Show success
+    document.getElementById('form-wrap').style.display = 'none'
+    const ok = document.getElementById('form-ok')
+    ok.style.display = 'flex'
+    ok.style.animation = 'fadeUp .55s var(--ease-out) both'
+
+    // Toast
+    const t = document.getElementById('toast')
+    t.classList.add('show')
+    setTimeout(() => t.classList.remove('show'), 5500)
+
+  } catch(err) {
+    console.error('Supabase failed:', err.message)
+    // Show user-friendly error on the button
+    const btn = document.getElementById('f-sub-btn')
+    btn.textContent = 'Try again — something went wrong'
+    btn.style.background = 'rgba(239,68,68,.15)'
+    btn.style.color = '#ef4444'
+    btn.style.border = '1px solid rgba(239,68,68,.3)'
+    setTimeout(() => {
+      btn.textContent = 'Submit Access Request →'
+      btn.style.background = ''
+      btn.style.color = ''
+      btn.style.border = ''
+    }, 3000)
+  } finally {
+    setSubmitState(false)
+  }
+}
+document.querySelectorAll('.f-in').forEach(el => {
+  el.addEventListener('keydown', e => { if(e.key==='Enter') doSubmit() })
+})
+
+/* ════════════════════════════════════════════
+   ACTIVE NAV HIGHLIGHT
+════════════════════════════════════════════ */
+const navLinks = document.querySelectorAll('.nl')
+const sectionIds = ['home','features','contacts-feat','workspace-feat','dashboard-feat','how-it-works','pricing','cta']
+const secObs = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id
+      navLinks.forEach(l => {
+        const active = l.getAttribute('href') === `#${id}`
+        l.style.color = active ? '#fff' : ''
+        l.style.background = active ? 'rgba(255,255,255,.07)' : ''
+        l.style.fontWeight = active ? '600' : ''
+      })
+    }
+  })
+}, { threshold: .3, rootMargin: `-${NAV_HEIGHT}px 0px -40% 0px` })
+sectionIds.forEach(id => { const el=document.getElementById(id); if(el) secObs.observe(el) })
+
+/* ════════════════════════════════════════════
+   PLAN CARD HOVER DEPTH
+════════════════════════════════════════════ */
+document.querySelectorAll('.plan').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const r = card.getBoundingClientRect()
+    const x = ((e.clientX-r.left)/r.width-.5)*6
+    const y = ((e.clientY-r.top)/r.height-.5)*4
+    card.style.transform = `translateY(-4px) rotateX(${-y}deg) rotateY(${x}deg)`
+  })
+  card.addEventListener('mouseleave', () => { card.style.transform='' })
+  card.style.transformStyle = 'preserve-3d'
+  card.style.perspective = '800px'
+  card.style.transition = 'transform .4s var(--ease-out), border-color .25s, box-shadow .4s'
+})
+
+/* ════════════════════════════════════════════
+   PROOF CARD STAGGER ENTRANCE
+════════════════════════════════════════════ */
+const proofObs = new IntersectionObserver(entries => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => {
+        entry.target.style.opacity = '1'
+        entry.target.style.transform = 'none'
+      }, i * 100)
+      proofObs.unobserve(entry.target)
+    }
+  })
+}, { threshold: .1 })
+document.querySelectorAll('.proof-card').forEach((card, i) => {
+  card.style.opacity = '0'
+  card.style.transform = 'translateY(32px)'
+  card.style.transition = `opacity .7s var(--ease-out), transform .7s var(--ease-out), border-color .25s, box-shadow .4s`
+  proofObs.observe(card)
+})
+
+/* ════════════════════════════════════════════
+   STEP CARD STAGGER
+════════════════════════════════════════════ */
+const stepObs = new IntersectionObserver(entries => {
+  if (entries.some(e => e.isIntersecting)) {
+    document.querySelectorAll('.hiw-step').forEach((s,i) => {
+      s.style.opacity='0'; s.style.transform='translateY(24px)'
+      s.style.transition=`opacity .6s var(--ease-out) ${i*.1}s, transform .6s var(--ease-out) ${i*.1}s, background .2s`
+      setTimeout(() => { s.style.opacity='1'; s.style.transform='none' }, 100 + i*100)
+    })
+    stepObs.disconnect()
+  }
+}, { threshold: .2 })
+const hiw = document.querySelector('.hiw-steps')
+if (hiw) stepObs.observe(hiw)
+
+/* ════════════════════════════════════════════
+   EYN ITEM STAGGER
+════════════════════════════════════════════ */
+const eynObs = new IntersectionObserver(entries => {
+  if (entries.some(e => e.isIntersecting)) {
+    document.querySelectorAll('.eyn-item').forEach((item, i) => {
+      item.style.opacity='0'; item.style.transform='translateY(20px)'
+      item.style.transition=`opacity .6s var(--ease-out) ${i*.12}s, transform .6s var(--ease-out) ${i*.12}s, background .25s`
+      setTimeout(() => { item.style.opacity='1'; item.style.transform='none' }, 200 + i*120)
+    })
+    eynObs.disconnect()
+  }
+}, { threshold: .15 })
+const eynCard = document.querySelector('.eyn-card')
+if (eynCard) eynObs.observe(eynCard)
+
+/* shake keyframe injection */
+const styleEl = document.createElement('style')
+styleEl.textContent = `@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transfo
