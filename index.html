@@ -930,6 +930,9 @@ footer{border-top:1px solid var(--w06);padding:44px 0;background:var(--ink2)}
 /* ════════════════════════════════════════════════════
    RESPONSIVE
 ════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════
+   RESPONSIVE — TABLET (≤1024px)
+════════════════════════════════════════════════════ */
 @media(max-width:1024px){
   .feat-grid{grid-template-columns:1fr;gap:52px}
   .feat-grid.flip .feat-copy,.feat-grid.flip .feat-vis{order:unset}
@@ -938,28 +941,197 @@ footer{border-top:1px solid var(--w06);padding:44px 0;background:var(--ink2)}
   .hc-main{width:calc(100% - 32px);left:16px;transform:none;animation:floatMob 7s ease-in-out infinite}
   @keyframes floatMob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 }
+
+/* ════════════════════════════════════════════════════
+   RESPONSIVE — MOBILE (≤900px)
+════════════════════════════════════════════════════ */
 @media(max-width:900px){
+  /* Nav */
   .nav-links,.nav-r{display:none}
   .nav-hamburger{display:flex}
-  .eyn-grid{grid-template-columns:1fr}
-  .eyn-item{border-right:none;border-bottom:1px solid var(--w06)}
-  .eyn-item:last-child{border-bottom:none}
-  .hiw-steps{grid-template-columns:1fr 1fr}
-  .proof-grid{grid-template-columns:1fr}
-  .pricing-grid{grid-template-columns:1fr;max-width:440px;margin:0 auto}
+
+  /* Sections spacing */
+  .hiw,.proof,.pricing,.cta-section{padding:64px 0}
+  .feat{padding:64px 0}
+  .eyn{padding:52px 0}
   .wrap{padding:0 20px}
-  .hiw,.proof,.pricing,.cta-section{padding:72px 0}
-  .feat{padding:80px 0}
+
+  /* EYN grid — stack */
+  .eyn-grid{grid-template-columns:1fr}
+  .eyn-item{border-right:none;border-bottom:1px solid var(--w10)}
+  .eyn-item:last-child{border-bottom:none}
+  .eyn-hero{padding:48px 28px 52px}
+
+  /* How it works — 2 col */
+  .hiw-steps{grid-template-columns:1fr 1fr}
+
+  /* Proof — stack */
+  .proof-grid{grid-template-columns:1fr}
+
+  /* Pricing — stack */
+  .pricing-grid{grid-template-columns:1fr;max-width:440px;margin:0 auto}
+
+  /* Beta strip — stack */
+  .beta-inner{flex-direction:column}
+  .beta-left{border-right:none;border-bottom:1px solid var(--w10);padding:24px 24px 20px}
+  .beta-right{padding:20px 24px 24px;flex-direction:column;align-items:flex-start;gap:16px}
+  .beta-cta{width:100%;text-align:center}
+
+  /* Feature vis — full width */
+  .feat-vis-frame{border-radius:12px}
 }
+
+/* ════════════════════════════════════════════════════
+   RESPONSIVE — PHONE (≤600px)
+════════════════════════════════════════════════════ */
 @media(max-width:600px){
-  .hero-actions{flex-direction:column;width:100%}
-  .hero-btn-primary,.hero-btn-secondary{width:100%;justify-content:center}
-  .hiw-steps{grid-template-columns:1fr}
+
+  /* ── Global ── */
+  .wrap{padding:0 16px}
+  body{cursor:auto} /* restore default cursor on touch */
+  #cursor,#cursor-ring{display:none} /* hide custom cursor on mobile */
+
+  /* ── Hero ── */
+  .hero{
+    padding:calc(var(--nav-h) + 60px) 20px 60px;
+    min-height:auto;
+  }
+  .hero-inner{max-width:100%}
+  .hero-h1{
+    font-size:clamp(36px,11vw,56px);
+    letter-spacing:-.03em;
+    margin-bottom:20px;
+  }
+  .hero-sub{
+    font-size:16px;
+    margin-bottom:36px;
+    padding:0 4px;
+  }
+  .hero-actions{flex-direction:column;width:100%;gap:10px}
+  .hero-btn-primary,.hero-btn-secondary{
+    width:100%;justify-content:center;
+    padding:15px 24px;font-size:15px;
+  }
+  .hero-note{font-size:10.5px;padding:0 8px;text-align:center}
+  .hero-badge{margin-bottom:24px}
+
+  /* Hero floating cards — simplified on mobile */
+  .hero-cards{
+    height:auto;margin:40px 0 0;
+    display:flex;flex-direction:column;gap:0;
+  }
+  .hc-main{
+    position:relative;left:auto;top:auto;
+    width:100%;transform:none;
+    animation:floatMob 7s ease-in-out infinite;
+    border-radius:12px;
+    overflow-x:auto;
+  }
+  .hc-table{min-width:480px} /* allow horizontal scroll on small tables */
+  .hc-title-bar .tbar-label{display:none} /* hide long label on mobile */
+
+  /* ── Ticker ── */
+  .ticker-outer::before,.ticker-outer::after{width:40px}
+  .ticker-item{padding:0 28px}
+  .ticker-val{font-size:16px}
+
+  /* ── EYN ── */
+  .eyn{padding:40px 0}
+  .eyn-hero{padding:36px 20px 40px}
+  .eyn-h{font-size:clamp(26px,8vw,38px)}
+  .eyn-sub{font-size:15px}
+  .eyn-item{padding:24px 20px}
+  .eyn-icon{width:38px;height:38px}
+
+  /* ── Feature sections ── */
+  .feat{padding:52px 0}
+  .feat-grid{gap:36px}
+  .feat-vis-frame{border-radius:10px}
+
+  /* Workspace — stack left/right panels */
+  .fv-ws{
+    grid-template-columns:1fr;
+    min-height:auto;
+  }
+  .fvws-left{
+    border-right:none;
+    border-bottom:1px solid var(--w10);
+    max-height:200px;
+    overflow-y:auto;
+  }
+  .fvws-right{padding:16px;gap:8px}
+  .fvws-bubble{font-size:12px;padding:9px 11px}
+  .fvws-tabs{overflow-x:auto}
+  .fvws-tab{padding:10px 14px;white-space:nowrap}
+  .fvws-conv-m{max-width:100%}
+
+  /* Dashboard stats — stack */
+  .fvd-stats{grid-template-columns:1fr 1fr;gap:8px}
+  .fvd-header{font-size:14px}
+  .fvd-stat-v{font-size:20px}
+
+  /* Feature copy */
+  .fc-h{font-size:clamp(22px,7vw,30px)}
+  .fc-p{font-size:14.5px}
+  .fc-list li{font-size:13.5px}
+  .feat-copy{padding:0 2px}
+
+  /* ── How it works ── */
+  .hiw-steps{grid-template-columns:1fr;gap:12px}
+  .hiw-step{padding:24px 20px}
+  .step-title{font-size:16px}
+  .step-body{font-size:13.5px}
+  .section-h{font-size:clamp(26px,8vw,36px)}
+
+  /* ── Proof cards ── */
+  .proof-grid{grid-template-columns:1fr;gap:14px}
+  .proof-card{padding:24px 20px}
+
+  /* ── Pricing ── */
+  .pricing-grid{
+    grid-template-columns:1fr;
+    max-width:100%;
+    gap:14px;
+  }
+  .plan{padding:24px 20px}
+  .plan-price-num{font-size:36px}
+  .billing-toggle{margin-bottom:28px}
+
+  /* Beta strip */
+  .beta-left{padding:20px}
+  .beta-heading{font-size:18px}
+  .beta-right{padding:16px 20px 20px;gap:14px}
+  .beta-desc{font-size:13.5px}
+
+  /* ── CTA form ── */
+  .cta-section{padding:52px 0}
+  .cta-grid{gap:36px}
   .f-row2{grid-template-columns:1fr}
-  .trust-divider{display:none}
-  /* trust strip removed */
-  .ticker-outer::before,.ticker-outer::after{width:60px}
-  footer .footer-grid{flex-direction:column}
+  .f-in{font-size:15px;padding:12px 14px} /* bigger tap targets */
+  .f-sub{padding:14px;font-size:15px}
+  .form-box{padding:28px 20px}
+
+  /* ── Footer ── */
+  footer{padding:48px 0 32px}
+  footer .footer-grid{
+    flex-direction:column;gap:32px;
+    padding:0 20px;
+  }
+  .footer-links-col{gap:10px}
+  .footer-links-col h4{margin-bottom:6px}
+  .footer-brand-name{font-size:18px}
+
+  /* ── Section headers ── */
+  .section-badge{margin-bottom:12px}
+  .hiw-header,.proof-header,.pricing-header{margin-bottom:40px}
+
+  /* ── Notification pop — smaller on mobile ── */
+  #notif-pop-live{
+    bottom:16px!important;
+    right:12px!important;
+    min-width:200px!important;
+    max-width:calc(100vw - 24px)!important;
+  }
 }
 </style>
 </head>
@@ -992,7 +1164,7 @@ footer{border-top:1px solid var(--w06);padding:44px 0;background:var(--ink2)}
   </div>
 
   <div class="nav-r">
-    <a class="btn-outline" href="https://vonkam.technology">Log in</a>
+    <a class="btn-outline" href="#cta">Log in</a>
     <a class="btn-cta" href="#cta">
       Get early access
       <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2.5 6.5h8M7 3L10.5 6.5 7 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
